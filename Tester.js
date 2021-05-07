@@ -1,5 +1,5 @@
-const { StringLengthTask } = require('./StringLengthTask');
 const fs = require('fs');
+const { performance } = require('perf_hooks');
 
 class Tester {
   _task;
@@ -7,7 +7,7 @@ class Tester {
 
   /**
    * 
-   * @param {StringLengthTask} task 
+   * @param {function} task 
    * @param {string} path 
    */
   constructor(task, path) {
@@ -35,6 +35,26 @@ class Tester {
   }
 
   /**
+   * Декоратор для расчёта времени выполнения алгоритма
+   * @private
+   * @param {function} testFn 
+   */
+  _measureRunTime(testFn) {
+    const self = this;
+
+    return function() {
+      const start = performance.now();
+      const result = testFn.apply(self, arguments);
+      const finish = performance.now();
+
+      const runTime = finish - start;
+      console.log('runTime:', runTime);
+
+      return result;
+    }
+  }
+
+  /**
    * @public
    * @returns {void}
    */
@@ -48,8 +68,8 @@ class Tester {
       if (!fs.existsSync(inFile) || !fs.existsSync(outFile))
         break;
 
-      const result = this._runTest(inFile, outFile);
-      console.log(result);
+      const result = this._measureRunTime(this._runTest)(inFile, outFile);
+      console.log('result:', result);
 
       fileCount++;
     }
