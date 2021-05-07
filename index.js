@@ -1,10 +1,10 @@
-const { StringLengthTask } = require('./StringLengthTask');
 const { Tester } = require('./Tester');
+const { LuckyTicketsTask } = require('./LuckyTicketsTask');
 
 class Program {
   static main() {
-    const task = new StringLengthTask();
-    const path = `./tests/0.String`;
+    const task = new LuckyTicketsTask();
+    const path = `./tests/1.Tickets`;
 
     const tester = new Tester(task, path);
     tester.runTests();
