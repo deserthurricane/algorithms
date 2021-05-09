@@ -68,8 +68,11 @@ class Tester {
       if (!fs.existsSync(inFile) || !fs.existsSync(outFile))
         break;
 
+      console.log('test no:', fileCount);
       const result = this._measureRunTime(this._runTest)(inFile, outFile);
       console.log('result:', result);
+
+      console.log('--------------------------------------');
 
       fileCount++;
     }
