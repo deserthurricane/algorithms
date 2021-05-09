@@ -26,7 +26,9 @@ class Tester {
     const data = fs.readFileSync(inFile, {
       encoding: 'utf-8'
     }).trim();
-    const actual = this._task.run(data);
+    const args = data.split('\r\n');
+    
+    const actual = this._task.run(Number(args[0]), Number(args[1]));
     const expect = fs.readFileSync(outFile, {
       encoding: 'utf-8'
     }).trim();
