@@ -1,0 +1,25 @@
+{
+  "name": "testing-system",
+  "version": "1.0.0",
+  "description": "## Установка и запуск 1. Глобально или в директории запуска проекта должны быть установлены Node.js и npm (https://nodejs.org/en/download/). 2. В файле ```index.js``` поменять строковое название папки из директории ```tests``` в методе ```Program.main()```. 3. Открыть терминал в корне проекта и выполнить ```node index.js```.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deserthurricane/testing-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deserthurricane/testing-system/issues"
+  },
+  "homepage": "https://github.com/deserthurricane/testing-system#readme",
+  "dependencies": {
+    "mathjs": "^9.3.2"
+  }
+}
