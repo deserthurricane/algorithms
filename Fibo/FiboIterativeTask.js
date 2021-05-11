@@ -13,6 +13,11 @@ class FiboIterativeTask {
     return result;
 	}
 
+  /**
+   * Порядковый номер числа Фибоначчи
+   * @param {number} order 
+   * @returns 
+   */
   _getFibo(order) {
     if (order === 0) {
       return 0;

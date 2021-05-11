@@ -1,4 +1,4 @@
-const { isInt, makeFloat } = require('./utils/numbers');
+const { isInt, makeFloat } = require('../utils/numbers');
 
 /**
  * Возведение в степень через двоичное разложение показателя степени

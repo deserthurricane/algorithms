@@ -1,7 +1,7 @@
 {
   "name": "testing-system",
   "version": "1.0.0",
-  "description": "## Установка и запуск 1. Глобально или в директории запуска проекта должны быть установлены Node.js и npm (https://nodejs.org/en/download/). 2. В файле ```index.js``` поменять строковое название папки из директории ```tests``` в методе ```Program.main()```. 3. Открыть терминал в корне проекта и выполнить ```node index.js```.",
+  "description": "",
   "main": "index.js",
   "directories": {
     "test": "tests"

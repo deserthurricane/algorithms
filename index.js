@@ -1,11 +1,20 @@
-const { FiboGoldenRatioTask } = require('./FiboGoldenRatioTask');
-const { FiboIterativeTask } = require('./FiboIterativeTask');
-const { FiboMatrixPowerTask } = require('./FiboMatrixPowerTask');
-const { FiboRecursionTask } = require('./FiboRecursionTask');
-const { PowerBinaryDecompositionTask } = require('./PowerBinaryDecompositionTask');
-const { PowerIterativeTask } = require('./PowerIterativeTask');
-const { PowerOfTwoTask } = require('./PowerOfTwoTask');
 const { Tester } = require('./Tester');
+
+const { FiboGoldenRatioTask } = require('./Fibo/FiboGoldenRatioTask');
+const { FiboIterativeTask } = require('./Fibo/FiboIterativeTask');
+const { FiboMatrixPowerTask } = require('./Fibo/FiboMatrixPowerTask');
+const { FiboRecursionTask } = require('./Fibo/FiboRecursionTask');
+
+const { PowerBinaryDecompositionTask } = require('./Power/PowerBinaryDecompositionTask');
+const { PowerIterativeTask } = require('./Power/PowerIterativeTask');
+const { PowerOfTwoTask } = require('./Power/PowerOfTwoTask');
+
+const { PrimesIterativeOptimizedTask } = require('./Primes/PrimesIterativeOptimizedTask');
+const { PrimesIterativeOptimizedTask2 } = require('./Primes/PrimesIterativeOptimizedTask2');
+const { PrimesIterativeTask } = require('./Primes/PrimesIterativeTask');
+const { PrimesOnlyPrimeDelimitersTask } = require('./Primes/PrimesOnlyPrimeDelimitersTask');
+const { PrimesEratosthenTask } = require('./Primes/PrimesEratosthenTask');
+const { PrimesEratosthenNTask } = require('./Primes/PrimesEratosthenNTask');
 
 class Program {
   static main() {
@@ -17,8 +26,15 @@ class Program {
     // const task = new FiboIterativeTask();
     // const task = new FiboRecursionTask();
     // const task = new FiboGoldenRatioTask();
-    const task = new FiboMatrixPowerTask();
-    const path = `./tests/Fibo`;
+    // const task = new FiboMatrixPowerTask();
+
+    // const task = new PrimesIterativeTask();
+    // const task = new PrimesIterativeOptimizedTask();
+    // const task = new PrimesIterativeOptimizedTask2();
+    // const task = new PrimesOnlyPrimeDelimitersTask();
+    const task = new PrimesEratosthenTask();
+    // const task = new PrimesEratosthenNTask();
+    const path = `./tests/Primes`;
 
     const tester = new Tester(task, path);
     tester.runTests();
