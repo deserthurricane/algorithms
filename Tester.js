@@ -26,12 +26,14 @@ class Tester {
     const data = fs.readFileSync(inFile, {
       encoding: 'utf-8'
     }).trim();
-    const actual = this._task.run(data);
+    const [count, mask] = this._task.run(data);
     const expect = fs.readFileSync(outFile, {
       encoding: 'utf-8'
     }).trim();
+
+    const [expectCount, expectMask] = expect.split('\r\n');
     
-    return actual === expect; 
+    return count === expectCount && mask === expectMask; 
   }
 
   /**
