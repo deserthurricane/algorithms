@@ -26,14 +26,14 @@ export class Tester {
     const data = fs.readFileSync(inFile, {
       encoding: 'utf-8'
     }).trim();
-    const array = data.split('\n')[1];
+    const array = data.split('\n')[1].split(' ').map(x => +x);
 
     const actual = this._task.run(array);
     const expect = fs.readFileSync(outFile, {
       encoding: 'utf-8'
-    }).trim();
-
-    console.log('actual', actual);
+    }).trim();   
+    
+    // console.log(actual, 'actual');
     
     
     return actual === expect; 

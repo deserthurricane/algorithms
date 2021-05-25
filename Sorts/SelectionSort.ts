@@ -1,20 +1,28 @@
-function selectionSort(array: number[]): number[] {
-  const sortedArray = [...array];
+export class SelectionSort {
+  array;
 
-  for (let i = sortedArray.length - 1; i >= 0; i--) {
-    let maxIndex = i;
+  main(): number[] {
+    const sortedArray = [...this.array];
 
-    for (let j = 0; j < i; j++) {
-      if (sortedArray[j] > sortedArray[maxIndex]) {
-        maxIndex = j;
+    for (let i = sortedArray.length - 1; i >= 0; i--) {
+      let maxIndex = i;
+  
+      for (let j = 0; j < i; j++) {
+        if (Number(sortedArray[j]) > Number(sortedArray[maxIndex])) {
+          maxIndex = j;
+        }
       }
+      const maxElement = Number(sortedArray[maxIndex]);
+      sortedArray[maxIndex] = Number(sortedArray[i]);
+      sortedArray[i] = maxElement;
     }
-    const maxElement = sortedArray[maxIndex];
-    sortedArray[maxIndex] = sortedArray[i];
-    sortedArray[i] = maxElement;
+  
+    return sortedArray;
   }
 
-  return sortedArray;
+  run(array:number[]): string {
+    this.array = array;
+    const sortedArray = this.main();    
+    return sortedArray.join(' ');
+  }
 }
-
-console.log(selectionSort([15, 16, 13, 8, 5, 11, 10, 3, 4, 12, 7, 2, 6, 9, 14, 1]));

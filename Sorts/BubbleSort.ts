@@ -3,12 +3,12 @@ export class BubbleSort {
 
   main(): number[] {
     const sortedArray = [...this.array];
-  
+
     for (let i = 0; i < sortedArray.length; i++) {
-      for (let j = 0; j < sortedArray.length; j++) {
-        if (sortedArray[j] > sortedArray[j+1]) {
-          const bubble = sortedArray[j];
-          sortedArray[j] = sortedArray[j+1];
+      for (let j = 0; j < sortedArray.length; j++) {        
+        if (Number(sortedArray[j]) > Number(sortedArray[j+1])) {
+          const bubble = Number(sortedArray[j]);
+          sortedArray[j] = Number(sortedArray[j+1]);
           sortedArray[j+1] = bubble;
         }
       }
@@ -19,10 +19,7 @@ export class BubbleSort {
 
   run(array:number[]): string {
     this.array = array;
-
-    const sortedArray = this.main();
-    console.log('sortedArray', sortedArray);
-    
+    const sortedArray = this.main();    
     return sortedArray.join(' ');
   }
 }

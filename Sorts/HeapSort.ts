@@ -1,8 +1,10 @@
 export class HeapSort {
   array;
 
-  constructor(arr: number[]) {
-    this.array = [...arr];
+  run(array:number[]): string {
+    this.array = array;
+    const sortedArray = this.main();    
+    return sortedArray.join(' ');
   }
 
   swap(a: number, b: number) {
@@ -17,7 +19,6 @@ export class HeapSort {
     for (let root = lastLeafParent; root >= 0; root--) {
       this.moveMaxToRoot(root, this.array.length);
     }
-    console.log(this.array, 'first sort'); // this.array[0] = MAX
 
     // Обход по всем элементам массива-кучи
     for (let i = this.array.length - 1; i >= 0; i--) {
@@ -25,8 +26,7 @@ export class HeapSort {
       this.moveMaxToRoot(0, i);
     }
 
-    console.log(this.array);
-    
+    return this.array;
   }
 
   moveMaxToRoot(root: number, size: number) {
@@ -51,9 +51,9 @@ export class HeapSort {
   }
 }
 
-const heapSort = new HeapSort([15, 16, 13, 8, 5, 11, 10, 3, 4, 12, 7, 2, 6, 9, 14, 1]);
+// const heapSort = new HeapSort([15, 16, 13, 8, 5, 11, 10, 3, 4, 12, 7, 2, 6, 9, 14, 1]);
 
-heapSort.main();
+// heapSort.main();
 
 
 // [15, 16, 13, 8, 5, 11, 10, 3, 4, 12, 7, 2, 6, 9, 14, 1]
