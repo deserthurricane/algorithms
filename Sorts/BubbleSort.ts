@@ -1,18 +1,28 @@
-function bubbleSort(array: number[]): number[] {
-  const sortedArray = [...array];
+export class BubbleSort {
+  array;
+
+  main(): number[] {
+    const sortedArray = [...this.array];
   
-  for (let i = 0; i < sortedArray.length; i++) {
-    for (let j = 0; j < sortedArray.length; j++) {
-      if (sortedArray[j] > sortedArray[j+1]) {
-        const bubble = sortedArray[j+1];
-        sortedArray[j+1] = sortedArray[j];
-        sortedArray[j] = bubble;
+    for (let i = 0; i < sortedArray.length; i++) {
+      for (let j = 0; j < sortedArray.length; j++) {
+        if (sortedArray[j] > sortedArray[j+1]) {
+          const bubble = sortedArray[j];
+          sortedArray[j] = sortedArray[j+1];
+          sortedArray[j+1] = bubble;
+        }
       }
     }
+    
+    return sortedArray;
   }
-  
-  return sortedArray;
-  
-}
 
-console.log(bubbleSort([2, 6, 9, 4, 1, 7, 8, 3, 5, 10]));
+  run(array:number[]): string {
+    this.array = array;
+
+    const sortedArray = this.main();
+    console.log('sortedArray', sortedArray);
+    
+    return sortedArray.join(' ');
+  }
+}

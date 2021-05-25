@@ -1,4 +1,4 @@
-function insertionSort(array: number[]): number[] {
+export function insertionSort(array: number[]): number[] {
   let sortedArr = [...array];
 
   for (let i = 1; i < sortedArr.length; i++) {
@@ -14,4 +14,4 @@ function insertionSort(array: number[]): number[] {
   return sortedArr;
 }
 
-console.log(insertionSort([2, 6, 9, 4, 1, 7, 8, 3, 5, 10]))
+insertionSort([2, 6, 9, 4, 1, 7, 8, 3, 5, 10]);
