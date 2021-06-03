@@ -2,17 +2,13 @@ export class RadixMaxSort {
   array: string[];
   radix: number;
   
-  main(array, radix = 16) {
+  main(array) {
     this.array = array;
 
-    // Проходимся по всем разрядам, начиная с младшего
-    // for (let r = radix-1; r >= 0; r--) {
-      this.sortByRadix();
-    // }
-    console.log(this.array, 'sortedArray');
-    console.log(this.array[this.array.length - 1], 'last of sortedArray');
+    this.sortByRadix();
 
-    // console.log(this.array[Math.floor(this.array.length / 2)], 'mid of sortedArray');
+    // console.log(this.array, 'sortedArray');
+    // console.log(this.array[this.array.length - 1], 'last of sortedArray');
 
     return this.array;
   }
@@ -48,19 +44,6 @@ export class RadixMaxSort {
       sortedKeysMap[key] = currentCount;
     })
 
-    // let currentCountArray = [];
-
-    // for (let i = this.array.length - 1; i >= 0; i--) {
-    //   const radixKey = this.array[i];
-    //   const radixValue = currentCountArray[radixKey];
-
-    //   if (radixValue != undefined) {
-    //     currentCountArray[radixKey] = radixValue + 1;
-    //   } else {
-    //     currentCountArray[radixKey] = 0;
-    //   }
-    // }
-
     const m = new Array(this.array.length);
 
     for (let i = this.array.length - 1; i >= 0; i--) {      
@@ -75,5 +58,3 @@ export class RadixMaxSort {
     this.array = m;
   }
 }
-
-// new RadixSort().main(['301', '123', '202', '202', '103', '231'], 3);

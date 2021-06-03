@@ -53,5 +53,3 @@ export class RadixSort {
     this.array = m;
   }
 }
-
-// new RadixSort().main(['301', '123', '202', '202', '103', '231'], 3);
