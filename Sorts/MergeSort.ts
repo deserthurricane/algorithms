@@ -1,11 +1,12 @@
-class MergeSort {
+export class MergeSort {
   array
   
   main(array) {
     this.array = array;
     
     const sortedArray = this.sort(0, this.array.length-1);
-    console.log(this.array, 'sortedArray');
+    // console.log(this.array, 'sortedArray');
+    // console.log(this.array[this.array.length - 1], 'last of sortedArray');
     return sortedArray;
   }
   
@@ -54,5 +55,3 @@ class MergeSort {
     }
   }
 }
-
-new MergeSort().main([1, 3, 2, 4, 5, 6, 8, 7])

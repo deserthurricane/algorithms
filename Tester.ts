@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { performance } from 'perf_hooks';
+import { readBinaryData } from './Buffer';
 
 export class Tester {
   _task;
@@ -36,7 +37,7 @@ export class Tester {
     // console.log(actual, 'actual');
     
     
-    return actual === expect; 
+    return actual === expect;  
   }
 
   /**
@@ -82,6 +83,16 @@ export class Tester {
 
       fileCount++;
     }
+  }
+
+  _runFile(array) {
+    this._task.main(array);
+  }
+
+  public runSingleOperation() {
+    const array = readBinaryData();
+    // @ts-ignore
+    this._measureRunTime(this._runFile)(array);
   }
 }
 
