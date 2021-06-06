@@ -1,5 +1,5 @@
-const fs = require('fs');
-const { performance } = require('perf_hooks');
+import fs from 'fs';
+import { performance } from 'perf_hooks';
 
 class Tester {
   _task;
@@ -26,10 +26,15 @@ class Tester {
     const data = fs.readFileSync(inFile, {
       encoding: 'utf-8'
     }).trim();
-    const actual = this._task.run(data);
+    const array = data.split('\n')[1].split(' ').map(x => +x);
+
+    const actual = this._task.run(array);
     const expect = fs.readFileSync(outFile, {
       encoding: 'utf-8'
-    }).trim();
+    }).trim();   
+    
+    // console.log(actual, 'actual');
+    
     
     return actual === expect; 
   }
