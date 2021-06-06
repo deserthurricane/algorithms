@@ -11,32 +11,23 @@ class PrimesEratosthenNTask {
 		num = parseInt(num);
 
 		const primes = [];
-		const lp = this._fillArrayWithZero(num);
+		// Изначально все величины lp[i] заполним нулями. - в JS оставляем undefined, чтобы не тратить время на заполнение массива
+		const lp = new Array(num);
 
 		for (let i = 2; i <= num; i++) {
-			if (lp[i] === 0) {
+			if (lp[i] === undefined) {
 				lp[i] = i;
 				primes.push(i);
 			}
 
-			for (const p of primes) {
-				if (p <= lp[i] && p * i <= num) {
-					lp[p * i] = p;
+			for (let j = 0; j <= lp[i] && j * i <= num; j++) {
+				if (primes[j] <= lp[i] && primes[j] * i <= num) {
+					lp[primes[j] * i] = primes[j];
 				}
 			}
 		}
 
 		return primes.length.toString();
-	}
-
-	_fillArrayWithZero(num) {
-		let numZeroArr = [];
-
-		for (let i = 0; i < num; i++) {
-			numZeroArr.push(0);
-		}
-
-		return numZeroArr;
 	}
 }
 

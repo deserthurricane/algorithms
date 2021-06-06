@@ -8,31 +8,39 @@ class PrimesEratosthenTask {
 	 * @returns {string}
 	 */
 	run(num) {
-		num = parseInt(num);
+		const n = parseInt(num);
+		const prime = this._createNumArray(num);
 
-		const numArr = this._createNumArray(num);
-
-		let currentIndex = 0;
-
-		while (currentIndex < numArr.length) {
-			for (let i = 0; i < numArr.length; i++) {
-				if (i !== currentIndex && numArr[i] % numArr[currentIndex] === 0) {
-					// numArr[i] = false;
-					numArr.splice(i, 1); // удаляем неподходящий элемент и уменьшаем длину массива
+		const sqrt = Math.sqrt(n);
+ 
+    for (let p = 2; p <= sqrt; p++) {
+			if (prime[p] === true) {
+				// Помечаем как false все множители p до корня из n
+				for (let i = p * p; i <= n; i += p) {
+					prime[i] = false;
 				}
 			}
+    }
 
-			currentIndex++;
-		}
+		let primeCount = 0;
+ 
+		// Считаем все индексы со значениями true
+    for (let i = 2; i <= n; i++) {
+			if (prime[i] === true) {
+				primeCount++;
+			}
+    }
 
-		return numArr.length.toString();
+		console.log(primeCount, 'primeCount')
+
+		return primeCount.toString();
 	}
 
 	_createNumArray(num) {
 		let numArr = [];
 
-		for (let i = 2; i <= num; i++) {
-			numArr.push(i);
+		for (let i = 0; i <= num; i++) {
+			numArr.push(true);
 		}
 
 		return numArr;

@@ -32,8 +32,8 @@ class Program {
     // const task = new PrimesIterativeOptimizedTask();
     // const task = new PrimesIterativeOptimizedTask2();
     // const task = new PrimesOnlyPrimeDelimitersTask();
-    const task = new PrimesEratosthenTask();
-    // const task = new PrimesEratosthenNTask();
+    // const task = new PrimesEratosthenTask();
+    const task = new PrimesEratosthenNTask();
     const path = `./tests/Primes`;
 
     const tester = new Tester(task, path);
