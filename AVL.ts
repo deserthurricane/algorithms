@@ -1,263 +1,301 @@
-class AVL {
-  root: AVLNode | null = null;
+import { performance } from 'perf_hooks';
 
-  _getBalance(root): number {
-    if (root == null)
-        return 0;
+/**
+ * Узел АВЛ-дерева
+ */
+class AVLNode {
+	key: number;
+	L: AVLNode | null = null;
+	R: AVLNode | null = null;
+	height: number = 1;
 
-    return this._getHeight(root.left) - this._getHeight(root.right);
-  }
+	constructor(key: number) {
+		this.key = key;
+	}
 
-  _getHeight(root): number {
-    if (root == null)
-    return 0;
+	_getHeight(root) {
+		return Math.max(root.L.height + root.R.height) + 1;
+	}
+}
 
-    return root.height;
-  }
+/**
+ * Реализация АВЛ-дерева
+ */
+class AVLTree {
+	root: AVLNode | null = null;
 
-  _getMax(a: number, b: number) {
-    return (a > b) ? a : b;
-  }
+	insert(root: AVLNode | null, key: number): AVLNode | null {
+		if (root === null) {
+			root = new AVLNode(key);
+			return root;
+		}
 
-  _rebalance(root: AVLNode, key: number) {
-    // if (Math.abs(root.L.height - root.R.height) <= 1) return;
+		if (key < root.key) {
+			root.L = this.insert(root.L, key);
+		}
 
-    // if (
-    //   // высота левого узла больше правого
-    //   root.L.height > root.R.height &&
-    //   // высота левого потомка левого узла >= высоте его правого потомка 
-    //   root.L.L.height >= root.L.R.height) 
-    // {
-    //   this._smallRightRotation(root);
-    // }
-            /* 3. Get the balance factor of this ancestor
-              node to check whether this node became
-              unbalanced */
-        const balance: number = this._getBalance(root);
- 
-        // If this node becomes unbalanced, then there
-        // are 4 cases Left Left Case
-        if (balance > 1 && root.key < root.L.key)
-            return this._smallRightRotation(root);
- 
-        // Right Right Case
-        if (balance < -1 && key > root.R.key)
-            return this._smallLeftRotation(root);
- 
-        // Left Right Case
-        if (balance > 1 && key > root.L.key) {
-          return this._bigRightRotation(root);
+		if (key > root.key) {
+			root.R = this.insert(root.R, key);
+		}
+
+		root.height = 1 + this._getMax(this._getHeight(root.L), this._getHeight(root.R));
+
+		/**
+		 * Делаем ребалансировку, когда это необходимо
+		 */
+		const balance = this._getBalance(root);
+
+		if (balance > 1 && key < root.L.key) {
+			return this._smallRightRotation(root);
+		}
+
+		if (balance < -1 && key > root.R.key) {
+			return this._smallLeftRotation(root);
+		}
+
+		if (balance > 1 && key > root.L.key) {
+			root.L = this._smallLeftRotation(root.L);
+			return this._smallRightRotation(root);
+		}
+
+		if (balance < -1 && key < root.R.key) {
+			root.R = this._smallRightRotation(root.R);
+			return this._smallLeftRotation(root);
+		}
+
+		return root;
+	}
+
+	search(key: number): boolean {
+		const found = this._search(this.root, key);
+		return found;
+	}
+
+	_search(root: AVLNode | null, key: number): boolean {
+		if (root === null) {
+			return false;
+		}
+
+		let found = false;
+
+		if (root.key === key) {
+			found = true;
+		}
+
+		if (key < root.key) {
+			found = this._search(root.L, key);
+		}
+
+		if (key > root.key) {
+			found = this._search(root.R, key);
+		}
+
+		return found;
+	}
+
+	remove(root: AVLNode | null, key: number) {
+		if (root == null) return root;
+
+    // Поиск узла для удаления
+		if (key < root.key) {
+      root.L = this.remove(root.L, key);
+    } else if (key > root.key) {
+      root.R = this.remove(root.R, key);
+    } else {
+      // Найден узел для удаления
+      // Ни одного или один ребенок
+			if (root.L == null || root.R == null) {
+				let temp = null;
+				if (temp == root.L) {
+          temp = root.R;
+        } else {
+          temp = root.L;
         }
- 
-        // Right Left Case
-        if (balance < -1 && key < root.R.key) {
-          return this._bigLeftRotation(root);
-        }
- 
-        /* return the (unchanged) node pointer */
-        return root;
-  }
 
-  _smallRightRotation(root: AVLNode): AVLNode {
+				if (temp == null) {
+					temp = root;
+					root = null;
+				} else {
+          root = temp;
+        }
+			} else {
+        // Оба ребенка
+				const temp = this._getMin(root.R);
+				root.key = temp.key;
+				root.R = this.remove(root.R, temp.key);
+			}
+		}
+
+		if (root == null) return root;
+
+    // Обновление высоты
+		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
+
+		// Ребалансировка
+		const balance = this._getBalance(root);
+
+		if (balance > 1 && this._getBalance(root.L) >= 0)
+			return this._smallRightRotation(root);
+
+		if (balance > 1 && this._getBalance(root.L) < 0) {
+      return this._bigRightRotation(root);
+		}
+
+		if (balance < -1 && this._getBalance(root.R) <= 0)
+			return this._smallLeftRotation(root);
+
+		if (balance < -1 && this._getBalance(root.R) > 0) {
+      return this._bigLeftRotation(root);
+		}
+
+		return root;
+	}
+
+	/**
+	 * Вычисление разницы между левым и правым листами
+	 * @param root
+	 * @returns
+	 */
+	private _getBalance(root): number {
+		if (root == null) return 0;
+
+		return this._getHeight(root.L) - this._getHeight(root.R);
+	}
+
+	/**
+	 * Геттер высоты узла
+	 * @param root
+	 * @returns
+	 */
+	private _getHeight(root): number {
+		if (root == null) return 0;
+
+		return root.height;
+	}
+
+	/**
+	 * Вспомогательная функция для вычисления макс значения
+	 * @param a
+	 * @param b
+	 * @returns
+	 */
+	private _getMax(a: number, b: number) {
+		return a > b ? a : b;
+	}
+
+  // Малый поворот направо
+	_smallRightRotation(root: AVLNode): AVLNode {
     const newRoot = root.L;
-    newRoot.R = root;
-    newRoot.R.L = newRoot.R;
+    const newLeftLeaf = newRoot.R;
 
-    // Update heights
-    newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
-    root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
+		newRoot.R = root;
+		root.L = newLeftLeaf;
 
-    return newRoot;
-  }
+    // Обновление высот нового и старого корня
+		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
+		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
 
-  _smallLeftRotation(root: AVLNode): AVLNode {
-    const newRoot = root.R;
-    newRoot.L = root;
-    newRoot.L.R = newRoot.L;
+		return newRoot;
+	}
 
-    // Update heights
-    newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
-    root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
+  // Малый поворот налево
+	_smallLeftRotation(root: AVLNode): AVLNode {
+		const newRoot = root.R;
+    const newRightLeaf = newRoot.L;
 
-    return newRoot;
-  }
+		newRoot.L = root;
+		root.R = newRightLeaf;
 
-  _bigRightRotation(root: AVLNode) {
-    const newRoot = this._smallLeftRotation(root);
-    this._smallRightRotation(newRoot);
-  }
+    // Обновление высот нового и старого корня
+		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
+		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
 
-  _bigLeftRotation(root: AVLNode) {
-    const newRoot = this._smallRightRotation(root);
-    this._smallLeftRotation(newRoot);
+		return newRoot;
+	}
+
+  // Большой поворот направо
+	_bigRightRotation(root: AVLNode) {
+		const newRoot = this._smallLeftRotation(root.L);
+		const updatedRoot = this._smallRightRotation(newRoot);
+		return updatedRoot;
+	}
+
+  // Большой поворот налево
+	_bigLeftRotation(root: AVLNode) {
+		const newRoot = this._smallRightRotation(root.R);
+		const updatedRoot = this._smallLeftRotation(newRoot);
+		return updatedRoot;
+	}
+
+  // Минимальный элемент
+	_getMin(root: AVLNode | null): AVLNode {
+		let current = root;
+
+		while (current.L != null) current = current.L;
+
+		return current;
+	}
+
+  // Перечисление в текущем порядке
+	preOrder(node: AVLNode) {
+		if (node != null) {
+			console.log(node.key + ' ');
+			this.preOrder(node.L);
+			this.preOrder(node.R);
+		}
+	}
+
+  /**
+	 * Выводит все элементы в порядке возрастания, по очереди L и R ветки
+	 */
+	printSorted() {
+		this._printSorted(this.root);
+	}
+
+	_printSorted(root: AVLNode | null) {
+		if (root === null) return;
+
+		this._printSorted(root.L);
+		console.log(root.key);
+		this._printSorted(root.R);
+	}
+
+  /**
+   * Заполнение случайными значениями
+   */
+  populateRandom() {
+    this._measureRunTime(() => {
+      for (let i = 0; i < 1000; i++) {
+        const randomKey: number = Math.floor(Math.random() * 100);
+        this.root = this.insert(this.root, randomKey)
+      }
+    });
   }
 
   /**
-   * Выводит все элементы в порядке возрастания
+   * Заполнение отсортированными по возрастанию значениями
    */
-  printSorted() {
-    this._printSorted(this.root);
-  }
-
-  _printSorted(root: AVLNode | null) {
-    if (root === null) return;
-
-    this._printSorted(root.L);
-    console.log(root.key);
-    this._printSorted(root.R);
-  }
-
-  insert(key: number) {
-    this.root = this._insert(this.root, key);
-  }
-
-  _insert(root: AVLNode | null, key: number): AVLNode | null {
-    if (root === null) {
-      root = new AVLNode(key);
-      return root;
-    }
-
-    if (key < root.key) {
-      root.L = this._insert(root.L, key);
-    }
-
-    if (key > root.key) {
-      root.R = this._insert(root.R, key)
-    }
-
-    root.height = 1 + this._getMax(this._getHeight(root.L), this._getHeight(root.R));
-
-    this._rebalance(root, key);
-
-    return root;
-  }
-
-  search(key: number): boolean {
-    const found = this._search(this.root, key);
-    console.log(found, 'found');
-    return found;
-  }
-
-  _search(root: AVLNode | null, key: number): boolean {
-    if (root === null) {
-      return false;
-    }
-
-    let found = false;
-
-    if (root.key === key) {
-      found = true;
-    }
-
-    if (key < root.key) {
-      found = this._search(root.L, key)
-    }
-
-    if (key > root.key) {
-      found = this._search(root.R, key)
-    }
-    
-    return found;
-  }
-
-  remove(key: number) {
-    this._remove(this.root, key)
-  }
-
-  _remove(root: AVLNode | null, key: number) {
-    /**
-     * Мы нашли нужный узел - удаляем и выходим из рекурсии
-     */
-    if (root && root.key === key) {
-      // Если root - это лист
-      if (root.L === null && root.R === null) {
-        root = null;
-        return root; // сразу возвращаем после присваивания, чтобы не спровоцировать ошибку ниже
+  populateAscend() {
+    this._measureRunTime(() => {
+      for (let i = 0; i < 1000; i++) {
+        this.root = this.insert(this.root, i)
       }
-
-      // Если есть левый дочерний узел
-      if (root.L && root.R === null) {
-        root = root.L;
-      }
-
-      // Если есть правый дочерний узел
-      if (root.L === null && root.R) {
-        root = root.R;
-      }
-
-      // Если есть оба дочерних узла
-      if (root.L && root.R) {
-        root.key = this._getMinValue(root.R); // записываем в корень минимальный ключ правого поддерева
-
-        // Удаляем дублирующийся узел-"донор" из правого поддерева
-        root.R = this._remove(root.R, root.key);
-      }
-
-      return root;
-    }
-
-    /**
-     * Мы ещё не нашли нужный узел
-     */
-    if (root && key < root.key) {
-      root.L = this._remove(root.L, key);
-    }
-
-    if (root && key > root.key) {
-      root.R = this._remove(root.R, key);
-    }
-
-    return root;
+    });
   }
 
-  _getMinValue(root: AVLNode | null): number {
-    let minValue = root.key;
+  _measureRunTime(cb) {
+    const start = performance.now();
+    const result = cb(this);
+    const finish = performance.now();
 
-    while (root.L !== null) {
-      minValue = root.L.key;
-      root = root.L;
-    }
+    const runTime = finish - start;
+    console.log('runTime:', runTime);
 
-    return minValue;
-  }
-
-  preOrder(node: AVLNode) {
-        if (node != null) {
-            console.log(node.key + " ");
-            this.preOrder(node.L);
-            this.preOrder(node.R);
-        }
-    }
-}
-
-class AVLNode {
-  key: number;
-  L: AVLNode | null = null;
-  R: AVLNode | null = null;
-  height: number = 1;
-
-  constructor(key: number) {
-    this.key = key;
-  }
-
-  _getHeight(root) {
-    return Math.max(root.L.height + root.R.height) + 1
+    return result;
   }
 }
 
-const avl = new AVL();
-avl.insert(10);
-avl.insert(20);
-avl.insert(30);
-avl.insert(40);
-avl.insert(50);
-avl.insert(25);
+const avl = new AVLTree();
 
-        /* The constructed AVL tree would be
-      30
-    /  \
-  20   40
-  /  \     \
-10  25    50
-*/
-avl.preOrder(avl.root);
+avl.populateAscend();
+avl.populateRandom()

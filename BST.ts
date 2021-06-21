@@ -1,3 +1,21 @@
+import { performance } from 'perf_hooks';
+
+/**
+ * Узел двоичного дерева
+ */
+class TreeNode {
+  key: number;
+  L: TreeNode | null = null;
+  R: TreeNode | null = null;
+
+  constructor(key: number) {
+    this.key = key;
+  }
+}
+
+/**
+ * Реализация двоичного дерева поиска
+ */
 class BST {
   root: TreeNode | null = null;
 
@@ -39,7 +57,7 @@ class BST {
 
   search(key: number): boolean {
     const found = this._search(this.root, key);
-    console.log(found, 'found');
+    // console.log(found, 'found');
     return found;
   }
 
@@ -125,41 +143,69 @@ class BST {
 
     return minValue;
   }
-}
 
-class TreeNode {
-  key: number;
-  L: TreeNode | null = null;
-  R: TreeNode | null = null;
+  /**
+   * Заполнение случайными значениями
+   */
+  populateRandom() {
+    this._measureRunTime(() => {
+      for (let i = 0; i < 100; i++) {
+        const randomKey: number = Math.floor(Math.random() * 100);
+        this.insert(randomKey)
+      }
+    });
+  }
 
-  constructor(key: number) {
-    this.key = key;
+  /**
+   * Заполнение отсортированными по возрастанию значениями
+   */
+  populateAscend() {
+    this._measureRunTime(() => {
+      for (let i = 0; i < 100; i++) {
+        this.insert(i)
+      }
+    });
+  }
+
+  searchRandom(count) {
+    const removeCount = count / 10;
+    
+    this._measureRunTime(() => {
+      for (let i = 0; i < removeCount; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
+        this.search(randomKey)
+      }
+    });
+  }
+
+  removeRandom(count) {
+    const removeCount = count / 10;
+    
+    this._measureRunTime(() => {
+      for (let i = 0; i < removeCount; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
+        this.remove(randomKey)
+      }
+    });
+  }
+
+  _measureRunTime(cb) {
+    const start = performance.now();
+    const result = cb(this);
+    const finish = performance.now();
+
+    const runTime = finish - start;
+    console.log('runTime:', runTime);
+
+    return result;
   }
 }
 
 const tree = new BST();
 
-  /* Let us create following BST
-        50
-      /     \
-    30      70
-    /  \    /  \
-  20   40  60   80 */
-  tree.insert(50);
+tree.populateRandom();
+// tree.populateAscend();
+tree.removeRandom(100);
+// tree.searchRandom(10000);
 
-  // console.log(tree, 'tree')
-  tree.insert(30);
-    // console.log(tree, 'tree')
-  tree.insert(20);
-  tree.insert(40);
-  tree.insert(70);
-  tree.insert(60);
-  tree.insert(80);
-  // tree.insert(75);
-  // tree.insert(90);
-  tree.remove(50);
-    
-  // Print inorder traversal of the BST
-  tree.printSorted();
-
-  // tree.search(80);
+// tree.printSorted()
