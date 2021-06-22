@@ -277,8 +277,10 @@ class AVLTree {
    */
   populateAscend() {
     this._measureRunTime(() => {
-      for (let i = 0; i < 1000; i++) {
-        this.root = this.insert(this.root, i)
+      for (let i = 0; i < 10; i++) {
+				console.log(i, 'key')
+				this.root = this.insert(this.root, i)
+				console.log(this.root?.key, 'avl.root.key')
       }
     });
   }
@@ -298,4 +300,4 @@ class AVLTree {
 const avl = new AVLTree();
 
 avl.populateAscend();
-avl.populateRandom()
+// avl.populateRandom()
