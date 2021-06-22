@@ -185,6 +185,8 @@ class AVLTree {
 
   // Малый поворот направо
 	_smallRightRotation(root: AVLNode): AVLNode {
+		console.log('_smallRightRotation');
+
     const newRoot = root.L;
     const newLeftLeaf = newRoot.R;
 
@@ -200,6 +202,8 @@ class AVLTree {
 
   // Малый поворот налево
 	_smallLeftRotation(root: AVLNode): AVLNode {
+		console.log('_smallLeftRotation');
+
 		const newRoot = root.R;
     const newRightLeaf = newRoot.L;
 
@@ -215,6 +219,8 @@ class AVLTree {
 
   // Большой поворот направо
 	_bigRightRotation(root: AVLNode) {
+		console.log('_bigRightRotation');
+		
 		const newRoot = this._smallLeftRotation(root.L);
 		const updatedRoot = this._smallRightRotation(newRoot);
 		return updatedRoot;
@@ -222,6 +228,8 @@ class AVLTree {
 
   // Большой поворот налево
 	_bigLeftRotation(root: AVLNode) {
+		console.log('_bigLeftRotation');
+		
 		const newRoot = this._smallRightRotation(root.R);
 		const updatedRoot = this._smallLeftRotation(newRoot);
 		return updatedRoot;
@@ -277,10 +285,10 @@ class AVLTree {
    */
   populateAscend() {
     this._measureRunTime(() => {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
 				console.log(i, 'key')
 				this.root = this.insert(this.root, i)
-				console.log(this.root?.key, 'avl.root.key')
+				console.log(this.root, 'avl.root')
       }
     });
   }
