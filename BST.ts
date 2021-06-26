@@ -147,10 +147,10 @@ class BST {
   /**
    * Заполнение случайными значениями
    */
-  populateRandom() {
+  populateRandom(count: number) {
     this._measureRunTime(() => {
-      for (let i = 0; i < 100; i++) {
-        const randomKey: number = Math.floor(Math.random() * 100);
+      for (let i = 0; i < count; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
         this.insert(randomKey)
       }
     });
@@ -159,15 +159,15 @@ class BST {
   /**
    * Заполнение отсортированными по возрастанию значениями
    */
-  populateAscend() {
+  populateAscend(count: number) {
     this._measureRunTime(() => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < count; i++) {
         this.insert(i)
       }
     });
   }
 
-  searchRandom(count) {
+  searchRandom(count: number) {
     const removeCount = count / 10;
     
     this._measureRunTime(() => {
@@ -178,7 +178,7 @@ class BST {
     });
   }
 
-  removeRandom(count) {
+  removeRandom(count: number) {
     const removeCount = count / 10;
     
     this._measureRunTime(() => {
@@ -203,9 +203,11 @@ class BST {
 
 const tree = new BST();
 
-tree.populateRandom();
-// tree.populateAscend();
-tree.removeRandom(100);
-// tree.searchRandom(10000);
+const count = 100000;
+
+// tree.populateRandom(count);
+tree.populateAscend(count);
+tree.removeRandom(count);
+tree.searchRandom(count);
 
 // tree.printSorted()
