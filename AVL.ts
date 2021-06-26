@@ -12,10 +12,6 @@ class AVLNode {
 	constructor(key: number) {
 		this.key = key;
 	}
-
-	_getHeight(root) {
-		return Math.max(root.L.height + root.R.height) + 1;
-	}
 }
 
 /**
@@ -38,14 +34,16 @@ class AVLTree {
 			root.R = this.insert(root.R, key);
 		}
 
+		// Исключаем дубликаты значений
+		if (key === root.key) return root;
+
+		// Увеличиваем высоту корня, так как добавился новый элемент
 		root.height = 1 + this._getMax(this._getHeight(root.L), this._getHeight(root.R));
 
-		/**
-		 * Делаем ребалансировку, когда это необходимо
-		 */
+		// Делаем ребалансировку, когда это необходимо
 		const balance = this._getBalance(root);
 
-		if (balance > 1 && key < root.L.key) {
+		if (balance > 1 && key < root.L.key) {			
 			return this._smallRightRotation(root);
 		}
 
@@ -54,13 +52,11 @@ class AVLTree {
 		}
 
 		if (balance > 1 && key > root.L.key) {
-			root.L = this._smallLeftRotation(root.L);
-			return this._smallRightRotation(root);
+			return this._bigRightRotation(root);
 		}
 
 		if (balance < -1 && key < root.R.key) {
-			root.R = this._smallRightRotation(root.R);
-			return this._smallLeftRotation(root);
+			return this._bigLeftRotation(root);
 		}
 
 		return root;
@@ -128,10 +124,7 @@ class AVLTree {
 
 		if (root == null) return root;
 
-    // Обновление высоты
-		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
-
-		// Ребалансировка
+		// Делаем ребалансировку, когда это необходимо
 		const balance = this._getBalance(root);
 
 		if (balance > 1 && this._getBalance(root.L) >= 0)
@@ -154,7 +147,6 @@ class AVLTree {
 	/**
 	 * Вычисление разницы между левым и правым листами
 	 * @param root
-	 * @returns
 	 */
 	private _getBalance(root): number {
 		if (root == null) return 0;
@@ -165,10 +157,9 @@ class AVLTree {
 	/**
 	 * Геттер высоты узла
 	 * @param root
-	 * @returns
 	 */
 	private _getHeight(root): number {
-		if (root == null) return 0;
+		if (root === null) return 0;
 
 		return root.height;
 	}
@@ -177,62 +168,57 @@ class AVLTree {
 	 * Вспомогательная функция для вычисления макс значения
 	 * @param a
 	 * @param b
-	 * @returns
 	 */
-	private _getMax(a: number, b: number) {
+	private _getMax(a: number, b: number): number {
 		return a > b ? a : b;
 	}
 
   // Малый поворот направо
 	_smallRightRotation(root: AVLNode): AVLNode {
-		console.log('_smallRightRotation');
+		const newRoot = root.L;
+		const leftChildRightChild = root.L.R;
 
-    const newRoot = root.L;
-    const newLeftLeaf = newRoot.R;
-
+		// Перемещаем корень в позицию правого ребенка
 		newRoot.R = root;
-		root.L = newLeftLeaf;
+		// Перевешиваем бывший правый лист
+		root.L = leftChildRightChild;
 
-    // Обновление высот нового и старого корня
-		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
+    // Обновление высот старого и нового корня
 		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
+		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
 
 		return newRoot;
 	}
 
   // Малый поворот налево
 	_smallLeftRotation(root: AVLNode): AVLNode {
-		console.log('_smallLeftRotation');
-
 		const newRoot = root.R;
-    const newRightLeaf = newRoot.L;
+		const rightChildLeftChild = root.R.L;
 
+		// Перемещаем корень в позицию левого ребенка
 		newRoot.L = root;
-		root.R = newRightLeaf;
+		// Перевешиваем бывший левый лист
+		root.R = rightChildLeftChild;
 
-    // Обновление высот нового и старого корня
-		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
+    // Обновление высот старого и нового корня
 		root.height = this._getMax(this._getHeight(root.L), this._getHeight(root.R)) + 1;
+		newRoot.height = this._getMax(this._getHeight(newRoot.L), this._getHeight(newRoot.R)) + 1;
 
 		return newRoot;
 	}
 
   // Большой поворот направо
 	_bigRightRotation(root: AVLNode) {
-		console.log('_bigRightRotation');
-		
-		const newRoot = this._smallLeftRotation(root.L);
-		const updatedRoot = this._smallRightRotation(newRoot);
-		return updatedRoot;
+		const firstRoot = this._smallLeftRotation(root.L);
+		const secondRoot = this._smallRightRotation(firstRoot);
+		return secondRoot;
 	}
 
   // Большой поворот налево
-	_bigLeftRotation(root: AVLNode) {
-		console.log('_bigLeftRotation');
-		
-		const newRoot = this._smallRightRotation(root.R);
-		const updatedRoot = this._smallLeftRotation(newRoot);
-		return updatedRoot;
+	_bigLeftRotation(root: AVLNode) {		
+		const firstRoot = this._smallRightRotation(root.R);
+		const secondRoot = this._smallLeftRotation(firstRoot);
+		return secondRoot;
 	}
 
   // Минимальный элемент
@@ -271,10 +257,10 @@ class AVLTree {
   /**
    * Заполнение случайными значениями
    */
-  populateRandom() {
+  populateRandom(count: number) {
     this._measureRunTime(() => {
-      for (let i = 0; i < 1000; i++) {
-        const randomKey: number = Math.floor(Math.random() * 100);
+      for (let i = 0; i < count; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
         this.root = this.insert(this.root, randomKey)
       }
     });
@@ -283,12 +269,32 @@ class AVLTree {
   /**
    * Заполнение отсортированными по возрастанию значениями
    */
-  populateAscend() {
+  populateAscend(count: number) {
     this._measureRunTime(() => {
-      for (let i = 0; i < 20; i++) {
-				console.log(i, 'key')
+      for (let i = 0; i < count; i++) {
 				this.root = this.insert(this.root, i)
-				console.log(this.root, 'avl.root')
+      }
+    });
+  }
+
+	searchRandom(count: number) {
+    const removeCount = count / 10;
+    
+    this._measureRunTime(() => {
+      for (let i = 0; i < removeCount; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
+        this.search(randomKey)
+      }
+    });
+  }
+
+  removeRandom(count: number) {
+    const removeCount = count / 10;
+    
+    this._measureRunTime(() => {
+      for (let i = 0; i < removeCount; i++) {
+        const randomKey: number = Math.floor(Math.random() * count);
+        this.remove(this.root, randomKey)
       }
     });
   }
@@ -307,5 +313,10 @@ class AVLTree {
 
 const avl = new AVLTree();
 
-avl.populateAscend();
-// avl.populateRandom()
+const count = 100;
+
+avl.populateAscend(count);
+// avl.populateRandom(count)
+
+// avl.removeRandom(count);
+avl.searchRandom(count);
