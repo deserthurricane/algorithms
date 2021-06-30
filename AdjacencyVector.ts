@@ -1,24 +1,13 @@
+/**
+ * Представление графа в виде вектора смежности
+ */
 export class AdjacencyVector<V> {
-  verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
-  adjacencyMatrix: Array<V | 0>[] = []; // 2D векторная матрица
-
-  /**
-   * Граф
-   * A - B
-   * | \ 
-   * C - D
-   */
-  /**
-   * Векторы смежности
-   * A B C D
-   * B A 0 0
-   * C A D 0
-   * D A C 0
-   */
+  private verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
+  private adjacencyMatrix: Array<V | 0>[] = []; // 2D векторная матрица
 
   // максимальная возможная степень вершины = количество всех добавленных вершин
   private _getMaxPower() {
-    return this.verticeArray.length;
+    return this.verticeArray.length - 1;
   }
 
   // После добавления новой вершины добавляем дефолтные нулевые значения для последнего столбца всех вершин
@@ -28,27 +17,61 @@ export class AdjacencyVector<V> {
       vector[maxPower] = 0;
     });
 
+    // Добавляем ноль в последнюю колонку каждого вектора
+    for (let i = 0; i <= this.adjacencyMatrix.length - 1; i++) {
+      this.adjacencyMatrix[i][this.adjacencyMatrix[i].length - 1] = 0;
+    }
+
+    // Заполняем нулями вектор нового элемента
+    for (let i = 0; i <= maxPower; i++) {
+      this.adjacencyMatrix[this.adjacencyMatrix.length - 1][i] = 0;
+    }
   }
 
-  public addVertice(newVertice: V, incidentVertices: V[]) {
+  public addVertice(newVertice: V, incidentVertices?: V[]) {
     const newVerticeIndex = this.verticeArray.length;
     this.verticeArray[newVerticeIndex] = newVertice;
+    this.adjacencyMatrix[newVerticeIndex] = [];
+
     this._fillWithZero();
-    const maxPower = this._getMaxPower();
+
+    if (!incidentVertices) return;
 
     incidentVertices.forEach((vertice: V) => {
-      const incidentVerticeIndex = this.verticeArray.findIndex(vertice);
-
-      this.verticeArray[incidentVerticeIndex]
-
-      this.adjacencyMatrix[incidentVerticeIndex][newVerticeIndex] = newVertice;
-      this.adjacencyMatrix[newVerticeIndex][maxPower] = newVertice;
+      // Обновляем вектор инцидентной вершины
+      const incidentVerticeIndex = this.verticeArray.indexOf(vertice);
+      const firstZeroIncidentIndex = this.adjacencyMatrix[incidentVerticeIndex].indexOf(0);      
+      this.adjacencyMatrix[incidentVerticeIndex][firstZeroIncidentIndex] = newVertice;
+      
+      // Обновляем вектор новой вершины
+      const firstZeroIndex = this.adjacencyMatrix[newVerticeIndex].indexOf(0);
+      this.adjacencyMatrix[newVerticeIndex][firstZeroIndex] = vertice;
     });
+  }
 
-      //     this.adjacencyMatrix[incidentVerticeIndex][newVerticeIndex] = newVertice;
-      // this.adjacencyMatrix[newVerticeIndex][maxPower] = newVertice;
+  printMatrix() {
+    return console.log(this.adjacencyMatrix);
   }
 }
 
+
+/**
+ * Граф
+ * A - B
+ * | \ 
+ * C - D
+ */
+/**
+ * Векторы смежности
+ * 0 - B C D 0
+ * 1 - A 0 0 0
+ * 2 - A D 0 0
+ * 3 - A C 0 0
+ */
 const graph = new AdjacencyVector();
-graph.addVertice('A')
+graph.addVertice('A');
+graph.addVertice('B', ['A']);
+graph.addVertice('C', ['A']);
+graph.addVertice('D', ['A', 'C']);
+graph.printMatrix();
+
