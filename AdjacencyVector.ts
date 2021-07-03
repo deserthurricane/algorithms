@@ -37,11 +37,17 @@ export class AdjacencyVector<V> {
   }
 
   public addVertice(newVertice: V, incidentVertices?: V[]) {
-    const newVerticeIndex = this.verticeArray.length;
+    const index = this.verticeArray.findIndex((v) => v === newVertice);
+    const newVerticeIndex =  index >= 0 ? index : this.verticeArray.length; 
+    // console.log(newVerticeIndex, 'newVerticeIndex');
+    
+    // const newVerticeIndex =  this.verticeArray.length;
     this.verticeArray[newVerticeIndex] = newVertice;
-    this.adjacencyMatrix[newVerticeIndex] = [];
+    this.adjacencyMatrix[newVerticeIndex] = this.adjacencyMatrix[newVerticeIndex] || [];
 
-    this._fillWithZero();
+    if (newVerticeIndex === this.verticeArray.length - 1) {
+      this._fillWithZero();
+    }
 
     if (!incidentVertices) return;
 
@@ -59,6 +65,10 @@ export class AdjacencyVector<V> {
 
   printMatrix() {
     return console.log(this.adjacencyMatrix);
+  }
+
+  printVerticeArray() {
+    return console.log(this.verticeArray);
   }
 }
 
@@ -94,6 +104,8 @@ export const graph = new AdjacencyVector();
 graph.addVertice('A');
 graph.addVertice('B', ['A']);
 graph.addVertice('C', ['A']);
-graph.addVertice('D', ['A', 'C']);
+graph.addVertice('D', ['B']);
+graph.addVertice('C', ['D']);
 graph.printMatrix();
+graph.printVerticeArray();
 
