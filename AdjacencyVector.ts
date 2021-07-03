@@ -5,6 +5,14 @@ export class AdjacencyVector<V> {
   private verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
   private adjacencyMatrix: Array<V | 0>[] = []; // 2D векторная матрица
 
+  public getVerticeArray() {
+    return this.verticeArray;
+  }
+
+  public getMatrix() {
+    return this.adjacencyMatrix;
+  }
+
   // максимальная возможная степень вершины = количество всех добавленных вершин
   private _getMaxPower() {
     return this.verticeArray.length - 1;
@@ -39,9 +47,9 @@ export class AdjacencyVector<V> {
 
     incidentVertices.forEach((vertice: V) => {
       // Обновляем вектор инцидентной вершины
-      const incidentVerticeIndex = this.verticeArray.indexOf(vertice);
-      const firstZeroIncidentIndex = this.adjacencyMatrix[incidentVerticeIndex].indexOf(0);      
-      this.adjacencyMatrix[incidentVerticeIndex][firstZeroIncidentIndex] = newVertice;
+      // const incidentVerticeIndex = this.verticeArray.indexOf(vertice);
+      // const firstZeroIncidentIndex = this.adjacencyMatrix[incidentVerticeIndex].indexOf(0);      
+      // this.adjacencyMatrix[incidentVerticeIndex][firstZeroIncidentIndex] = newVertice;
       
       // Обновляем вектор новой вершины
       const firstZeroIndex = this.adjacencyMatrix[newVerticeIndex].indexOf(0);
@@ -57,18 +65,32 @@ export class AdjacencyVector<V> {
 
 /**
  * Граф
- * A - B
+ * A <- B
  * | \ 
  * C - D
  */
 /**
- * Векторы смежности
+ * Векторы смежности (неориентированные)
  * 0 - B C D 0
  * 1 - A 0 0 0
  * 2 - A D 0 0
  * 3 - A C 0 0
  */
-const graph = new AdjacencyVector();
+/**
+ * Векторы смежности (ориентированные)
+ * 0 - 0 0 0 0
+ * 1 - A 0 0 0
+ * 2 - A 0 0 0
+ * 3 - A C 0 0
+ */
+/**
+ * Векторы смежности (ориентированные, reverted)
+ * 0 - B C D 0  AB, AC, AD
+ * 1 - 0 0 0 0  -
+ * 2 - D 0 0 0  CD
+ * 3 - 0 0 0 0  -
+ */
+export const graph = new AdjacencyVector();
 graph.addVertice('A');
 graph.addVertice('B', ['A']);
 graph.addVertice('C', ['A']);
