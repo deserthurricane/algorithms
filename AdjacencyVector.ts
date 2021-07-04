@@ -5,6 +5,19 @@ export class AdjacencyVector<V> {
   private verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
   private adjacencyMatrix: Array<V | 0>[] = []; // 2D векторная матрица
 
+  static createEmptyMatrix(n: number) {
+    const matrix = [];
+    
+    for (let i = 0; i < n; i++) {
+      matrix[i] = [];
+      for (let j = 0; j < n; j++) {
+        matrix[i][j] = 0;
+      }
+    }
+
+    return matrix;
+  }
+
   public getVerticeArray() {
     return this.verticeArray;
   }
@@ -101,11 +114,32 @@ export class AdjacencyVector<V> {
  * 3 - 0 0 0 0  -
  */
 export const graph = new AdjacencyVector();
+// test 1
 graph.addVertice('A');
 graph.addVertice('B', ['A']);
 graph.addVertice('C', ['A']);
+graph.addVertice('B', ['C']);
 graph.addVertice('D', ['B']);
 graph.addVertice('C', ['D']);
+
+// test 2
+// graph.addVertice('A');
+// graph.addVertice('B');
+// graph.addVertice('C');
+// graph.addVertice('D');
+// graph.addVertice('E');
+// graph.addVertice('F');
+// graph.addVertice('G');
+// graph.addVertice('H');
+
+// graph.addVertice('A', ['B']);
+// graph.addVertice('B', ['C', 'F', 'E']);
+// graph.addVertice('C', ['D', 'G']);
+// graph.addVertice('D', ['C', 'H']);
+// graph.addVertice('E', ['A', 'F']);
+// graph.addVertice('F', ['G']);
+// graph.addVertice('G', ['F']);
+// graph.addVertice('H', ['D', 'G']);
 graph.printMatrix();
 graph.printVerticeArray();
 
