@@ -48,32 +48,25 @@ export class AdjacencyVector<V> {
       this.adjacencyMatrix[this.adjacencyMatrix.length - 1][i] = 0;
     }
   }
-
-  public addVertice(newVertice: V, incidentVertices?: V[]) {
+ 
+  // Добавление новой вершины
+  public addVertice(newVertice: V) {
     const index = this.verticeArray.findIndex((v) => v === newVertice);
     const newVerticeIndex =  index >= 0 ? index : this.verticeArray.length; 
-    // console.log(newVerticeIndex, 'newVerticeIndex');
-    
-    // const newVerticeIndex =  this.verticeArray.length;
+
     this.verticeArray[newVerticeIndex] = newVertice;
     this.adjacencyMatrix[newVerticeIndex] = this.adjacencyMatrix[newVerticeIndex] || [];
 
     if (newVerticeIndex === this.verticeArray.length - 1) {
       this._fillWithZero();
     }
+  }
 
-    if (!incidentVertices) return;
-
-    incidentVertices.forEach((vertice: V) => {
-      // Обновляем вектор инцидентной вершины
-      // const incidentVerticeIndex = this.verticeArray.indexOf(vertice);
-      // const firstZeroIncidentIndex = this.adjacencyMatrix[incidentVerticeIndex].indexOf(0);      
-      // this.adjacencyMatrix[incidentVerticeIndex][firstZeroIncidentIndex] = newVertice;
-      
-      // Обновляем вектор новой вершины
-      const firstZeroIndex = this.adjacencyMatrix[newVerticeIndex].indexOf(0);
-      this.adjacencyMatrix[newVerticeIndex][firstZeroIndex] = vertice;
-    });
+  // Добавление нового ребра
+  public addEdge(start: V, end: V) {
+    const startVerticeIndex = this.verticeArray.indexOf(start);
+    const firstZeroIndex = this.adjacencyMatrix[startVerticeIndex].indexOf(0);
+    this.adjacencyMatrix[startVerticeIndex][firstZeroIndex] = end;
   }
 
   printMatrix() {
@@ -86,9 +79,11 @@ export class AdjacencyVector<V> {
 }
 
 
+export const graph = new AdjacencyVector();
+// test 1
 /**
  * Граф
- * A <- B
+ * A - B
  * | \ 
  * C - D
  */
@@ -113,49 +108,78 @@ export class AdjacencyVector<V> {
  * 2 - D 0 0 0  CD
  * 3 - 0 0 0 0  -
  */
-export const graph = new AdjacencyVector();
-// test 1
-graph.addVertice('A');
-graph.addVertice('B', ['A']);
-graph.addVertice('C', ['A']);
-graph.addVertice('B', ['C']);
-graph.addVertice('D', ['B']);
-graph.addVertice('C', ['D']);
+// graph.addVertice('A');
+// graph.addVertice('B');
+// graph.addVertice('C');
+// graph.addVertice('D');
 
-// graph.addVertice('E');
-// graph.addVertice('G');
-// graph.addVertice('H');
-// graph.addVertice('C', ['E']);
-// graph.addVertice('E', ['G']);
-// graph.addVertice('G', ['H']);
-// graph.addVertice('H', ['E']);
+// graph.addEdge('A', 'B');
+// graph.addEdge('A', 'C');
+// graph.addEdge('B', 'C');
+// graph.addEdge('C', 'D');
+// graph.addEdge('D', 'B');
+
 
 // test 2
-// graph.addVertice('A'); // 0
-// graph.addVertice('B'); // 1
-// graph.addVertice('C'); // 2
-// graph.addVertice('D'); // 3
-// graph.addVertice('E'); // 4
-// graph.addVertice('F'); // 5
-// graph.addVertice('G'); // 6
-// graph.addVertice('H'); // 7
+graph.addVertice('A'); // 0
+graph.addVertice('B'); // 1
+graph.addVertice('C'); // 2
+graph.addVertice('D'); // 3
+graph.addVertice('E'); // 4
+graph.addVertice('F'); // 5
+graph.addVertice('G'); // 6
+graph.addVertice('H'); // 7
 
 // B H D C E A   // G, F
 
-// graph.addVertice('A', ['B']);
-// graph.addVertice('B', ['C']);
-// graph.addVertice('B', ['F']);
-// graph.addVertice('B', ['E']);
-// graph.addVertice('C', ['D']);
-// graph.addVertice('C', ['G']);
-// graph.addVertice('D', ['C']);
-// graph.addVertice('D', ['H']);
-// graph.addVertice('E', ['A']);
-// graph.addVertice('E', ['F']);
-// graph.addVertice('F', ['G']);
-// graph.addVertice('G', ['F']);
-// graph.addVertice('H', ['D']);
-// graph.addVertice('H', ['G']);
+graph.addEdge('A', 'B');
+graph.addEdge('B', 'C');
+graph.addEdge('B', 'F');
+graph.addEdge('B', 'E');
+graph.addEdge('C', 'D');
+graph.addEdge('C', 'G');
+graph.addEdge('D', 'C');
+graph.addEdge('D', 'H');
+graph.addEdge('E', 'A');
+graph.addEdge('E', 'F');
+graph.addEdge('F', 'G');
+graph.addEdge('G', 'F');
+graph.addEdge('H', 'D');
+graph.addEdge('H', 'G');
 graph.printMatrix();
 graph.printVerticeArray();
+
+
+//   const matrix =   [[
+  //   'B', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'C', 'F', 'E', 0,
+  //   0,   0,   0,   0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'C', 'H', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'A', 'F', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'G', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'F', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0, 0, 0
+  // ]];
 
