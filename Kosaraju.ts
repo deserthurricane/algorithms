@@ -25,10 +25,43 @@ class Kosaraju<V> {
   revertMatrix() {
     const verticeArray = this.adjacencyVector.getVerticeArray();
     const matrix = this.adjacencyVector.getMatrix();
+  //   const matrix =   [[
+  //   'B', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'C', 'F', 'E', 0,
+  //   0,   0,   0,   0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'C', 'H', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'A', 'F', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'G', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'F', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0, 0, 0
+  // ]];
 
     const newMatrix = AdjacencyVector.createEmptyMatrix(verticeArray.length);
 
     matrix.forEach((row, rowIndex) => {
+      // @ts-ignore
       row.forEach((v: V | 0, index) => {
         // Найден вектор, надо поменять его направление
         if (v !== 0) {
@@ -40,7 +73,7 @@ class Kosaraju<V> {
       });
     });
 
-    // console.log(newMatrix, 'newMatrix');
+    console.log(newMatrix, 'newMatrix');
     
     return newMatrix;
   }
@@ -48,27 +81,149 @@ class Kosaraju<V> {
   // Поиск в глубину
   DFS(matrix: (V|0)[][], verticeArray: V[]): number[] {
     const visited: number[] = [];
-
+    const checked = [];
     console.log(verticeArray, 'verticeArray');
-    
 
-    const vectorIndex = 0;
-    this._DFS(matrix, vectorIndex, verticeArray, visited)
-    // console.log(visited, 'visited final')
-    return visited;
+    let vectorIndex = 0;
+
+    while (vectorIndex < verticeArray.length) {
+      if (!checked.includes(vectorIndex)) {
+        this._DFS2(matrix, vectorIndex, verticeArray, visited, checked)
+      }
+      vectorIndex++;
+    }
+    console.log(checked, 'checked final')
+    return checked;
   }
 
-  _DFS(matrix: (V | 0)[][], vectorIndex: number, verticeArray: V[], visited: number[]) {
-    console.log(visited, 'visited');
+
+  main() {
+    // Меняем направления дуг в векторной матрице
+    const reverseMatrix = this.revertMatrix();
+    const matrix = this.adjacencyVector.getMatrix();
+  //   const matrix =   [[
+  //   'B', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'C', 'F', 'E', 0,
+  //   0,   0,   0,   0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'C', 'H', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'A', 'F', 0, 0,
+  //   0,   0,   0, 0
+  // ],
+  // [
+  //   'G', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'F', 0, 0, 0,
+  //   0,   0, 0, 0
+  // ],
+  // [
+  //   'D', 'G', 0, 0,
+  //   0,   0, 0, 0
+  // ]] as (0 | V)[][];
+
+    const verticeArray = this.adjacencyVector.getVerticeArray();
+    
+    const newSearchOrder: number[] = this.DFS(reverseMatrix, verticeArray).reverse();
+    console.log(newSearchOrder, 'newSearchOrder');
+
+    return this.getStronglyConnectedComponents(newSearchOrder, matrix, verticeArray);
+  }
+
+  getStronglyConnectedComponents(searchOrder: number[], matrix: (V|0)[][], verticeArray: V[]): number[][] {
+    const stronglyConnectedComponents: number[][] = [];
+    
+    let checked = [];
+    
+    searchOrder.forEach(order => {
+      console.log(order, 'order');
+      console.log(checked, 'checked');
+      let visited: number[] = [];
+
+      
+      this._DFS3(matrix, order, verticeArray, visited, checked);
+
+      // if (visited.length === 1) {
+      //   return checked.push(visited[0]);
+      // }
+
+      // Одна вершина не может быть связанной
+      if (visited.length > 1) {
+        // Обновляем список связанных компонентов  
+        stronglyConnectedComponents.push(visited);
+      }
+
+      checked = checked.concat(visited)
+
+      // visited.forEach(index => checked.push(index));
+    });
+
+    console.log(stronglyConnectedComponents, 'stronglyConnectedComponents')
+
+    return stronglyConnectedComponents;
+  }
+
+  _DFS3(matrix: (V | 0)[][], vectorIndex: number, verticeArray: V[], visited: number[], checked: number[]) {
+    visited.push(vectorIndex);
+    
+    matrix[vectorIndex].forEach((child: V | 0) => {
+      if (child !== 0) {
+        const childIndex = verticeArray.indexOf(child);
+
+        if (!visited.includes(childIndex) && !checked.includes(childIndex)) {
+          return this._DFS3(matrix, childIndex, verticeArray, visited, checked);
+        }
+      }
+    })
+  }
+
+  _DFS2(matrix: (V | 0)[][], vectorIndex: number, verticeArray: V[], visited: number[], checked: number[]) {
+    visited.push(vectorIndex);
+
+    console.log(vectorIndex, 'vectorIndex');
+    
+    
+    matrix[vectorIndex].forEach((child: V | 0) => {
+      console.log(matrix[vectorIndex], 'matrix[vectorIndex]');
+      console.log(child, ' child');
+      
+      
+      if (child !== 0) {
+        const childIndex = verticeArray.indexOf(child);
+
+        if (!visited.includes(childIndex)) {
+          this._DFS2(matrix, childIndex, verticeArray, visited, checked);
+        }
+      }
+    })
+
+    checked.push(vectorIndex)
+  }
+
+
+  _DFS1(matrix: (V | 0)[][], vectorIndex: number, verticeArray: V[], visited: number[]) {
+    // console.log(visited, 'visited');
     
     visited.push(vectorIndex);
 
     matrix[vectorIndex].forEach((child: V | 0) => {
       if (child !== 0) {
-        const childIndex = verticeArray.indexOf(child as any);
+        const childIndex = verticeArray.indexOf(child);
 
         if (!visited.includes(childIndex)) {
-          return this._DFS(matrix, childIndex, verticeArray, visited);
+          return this._DFS1(matrix, childIndex, verticeArray, visited);
         }
       }
 
@@ -85,25 +240,6 @@ class Kosaraju<V> {
     
                    
 
-  }
-
-  main() {
-    // Меняем направления дуг в векторной матрице
-    const reverseMatrix = this.revertMatrix();
-    const matrix = this.adjacencyVector.getMatrix();
-    const verticeArray = this.adjacencyVector.getVerticeArray();
-
-    console.log(reverseMatrix, 'reverseMatrix');
-    
-
-    const newSearchOrder: number[] = this.DFS(reverseMatrix, verticeArray);
-
-    console.log(newSearchOrder, 'newSearchOrder');
-    
-
-    // this.test(newSearchOrder, matrix, verticeArray)
-
-    return this.getStronglyConnectedComponents(newSearchOrder, matrix, verticeArray);
   }
 
   test(searchOrder: number[], matrix: (V|0)[][], verticeArray: V[]) {
@@ -140,53 +276,18 @@ class Kosaraju<V> {
 		return components;
   }
 
-  getStronglyConnectedComponents(searchOrder: number[], matrix: (V|0)[][], verticeArray: V[]): number[][] {
-    const stronglyConnectedComponents: number[][] = [];
-    // searchOrder = searchOrder.reverse();
-    
-    const checked = [];
-    
-    searchOrder.forEach(order => {
-      console.log(order, 'order');
-      console.log(checked, 'checked');
-      
-      // Начальный пункт, в который мы должны вернуться, если компонент связный
-      const visited: number[] = [];
-      this._DFS2(matrix, order, verticeArray, visited, checked);
+  // _DFSUtil(matrix, index, visited) {
+  //   visited.push(index);
 
-      // if (visited.length === 1) {
-      //   return checked.push(visited[0]);
-      // }
+  //   let i = 0;
 
-      // Одна вершина не может быть связанной
-      if (visited.length > 1) {
-        // Обновляем список связанных компонентов  
-        stronglyConnectedComponents.push(visited);
-      }
-
-      checked.push(order);
-
-      // visited.forEach(index => checked.push(index));
-    });
-
-    console.log(stronglyConnectedComponents, 'stronglyConnectedComponents')
-
-    return stronglyConnectedComponents;
-  }
-
-  _DFS2(matrix: (V | 0)[][], vectorIndex: number, verticeArray: V[], visited: number[], checked: number[]) {
-    visited.push(vectorIndex);
-    
-    matrix[vectorIndex].forEach((child: V | 0) => {
-      if (child !== 0) {
-        const childIndex = verticeArray.indexOf(child);
-
-        if (!visited.includes(childIndex) && !checked.includes(childIndex)) {
-          return this._DFS2(matrix, childIndex, verticeArray, visited, checked);
-        }
-      }
-    })
-  }
+  //   while (i < matrix.length - 1) {
+  //     i++;
+  //     if (!visited.includes(i)) {
+  //       this._DFSUtil(matrix, i, visited)
+  //     }
+  //   }
+  // }
 }
 
 const algo = new Kosaraju(graph);

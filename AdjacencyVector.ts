@@ -122,24 +122,40 @@ graph.addVertice('B', ['C']);
 graph.addVertice('D', ['B']);
 graph.addVertice('C', ['D']);
 
-// test 2
-// graph.addVertice('A');
-// graph.addVertice('B');
-// graph.addVertice('C');
-// graph.addVertice('D');
 // graph.addVertice('E');
-// graph.addVertice('F');
 // graph.addVertice('G');
 // graph.addVertice('H');
+// graph.addVertice('C', ['E']);
+// graph.addVertice('E', ['G']);
+// graph.addVertice('G', ['H']);
+// graph.addVertice('H', ['E']);
+
+// test 2
+// graph.addVertice('A'); // 0
+// graph.addVertice('B'); // 1
+// graph.addVertice('C'); // 2
+// graph.addVertice('D'); // 3
+// graph.addVertice('E'); // 4
+// graph.addVertice('F'); // 5
+// graph.addVertice('G'); // 6
+// graph.addVertice('H'); // 7
+
+// B H D C E A   // G, F
 
 // graph.addVertice('A', ['B']);
-// graph.addVertice('B', ['C', 'F', 'E']);
-// graph.addVertice('C', ['D', 'G']);
-// graph.addVertice('D', ['C', 'H']);
-// graph.addVertice('E', ['A', 'F']);
+// graph.addVertice('B', ['C']);
+// graph.addVertice('B', ['F']);
+// graph.addVertice('B', ['E']);
+// graph.addVertice('C', ['D']);
+// graph.addVertice('C', ['G']);
+// graph.addVertice('D', ['C']);
+// graph.addVertice('D', ['H']);
+// graph.addVertice('E', ['A']);
+// graph.addVertice('E', ['F']);
 // graph.addVertice('F', ['G']);
 // graph.addVertice('G', ['F']);
-// graph.addVertice('H', ['D', 'G']);
+// graph.addVertice('H', ['D']);
+// graph.addVertice('H', ['G']);
 graph.printMatrix();
 graph.printVerticeArray();
 
