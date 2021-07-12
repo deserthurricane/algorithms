@@ -2,8 +2,8 @@
  * Представление графа в виде матрицы смежности
  */
 export class AdjacencyMatrix<V> {
-  private verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
-  private matrix: Array<1 | 0>[] = []; // 2D матрица
+  protected verticeArray: V[] = []; // храним индексы всех вершин в порядке их добавления в граф
+  protected matrix: Array<1 | 0>[] = []; // 2D матрица
 
   static createEmptyMatrix(n: number) {
     const matrix = [];
@@ -27,12 +27,12 @@ export class AdjacencyMatrix<V> {
   }
 
   // максимальная возможная степень вершины = количество всех добавленных вершин
-  private _getMaxPower() {
+  protected _getMaxPower() {
     return this.verticeArray.length - 1;
   }
 
   // После добавления новой вершины добавляем дефолтные нулевые значения для последнего столбца всех вершин
-  private _fillWithZero() {
+  protected _fillWithZero() {
     const maxPower = this._getMaxPower();
     this.matrix.forEach((vector: Array<1 | 0>) => {
       vector[maxPower] = 0;
@@ -73,11 +73,11 @@ export class AdjacencyMatrix<V> {
     this.matrix[startIndex][endIndex] = 1;
   }
 
-  printMatrix() {
+  public printMatrix() {
     return console.log(this.matrix);
   }
 
-  printVerticeArray() {
+  public printVerticeArray() {
     return console.log(this.verticeArray);
   }
 }
@@ -99,7 +99,7 @@ graph.addVertice('V12'); // 11
 graph.addVertice('V13'); // 12
 graph.addVertice('V14'); // 13
 
-graph.printVerticeArray();
+// graph.printVerticeArray();
 
 graph.addEdge('V5', 'V9');
 graph.addEdge('V5', 'V3');
@@ -137,4 +137,4 @@ graph.addEdge('V11', 'V3');
 
 graph.addEdge('V13', 'V3');
 
-graph.printMatrix();
+// graph.printMatrix();
