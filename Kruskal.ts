@@ -1,5 +1,9 @@
 import { graph, AdjacencyMatrixWeighted } from "./AdjacencyMatrixWeighted";
 
+/**
+ * Алгоритм Краскала - поиск в неориентированном взвешенном графе 
+ * минимального скелета (минимального остовного дерева)
+ */
 class Kruskal<V> {
   verticeArray: V[];
   adjacencyMatrix: number[][];
@@ -9,68 +13,66 @@ class Kruskal<V> {
     this.adjacencyMatrix = graph.getMatrix();
   }
 
-  main(): UnionFind<V>[] {
+  /**
+   * Запуск алгоритма Краскала
+   */
+  main(): UnionFind[] {
     // Отсортировать рёбра
-    const sortedEdges: UnionFind<V>[] = this._sortEdges();
-    console.log(sortedEdges, 'sortedEdges'); 
+    const sortedEdges: UnionFind[] = this._sortEdges();
+    // Построить минимальный скелет графа
+    return this._getMinSkullGraph(sortedEdges);
+  }
 
-    // Для каждой вершины проверить, изолир или нет, иначе выполнять поиск вшить/вглубь
-    // Если цикла не найдено, добавлять ребро
-
-    // Индексы добавленных вершин
+  /**
+   * Поиск минимального скелета графа на основе веса рёбер и отсутствия циклов
+   * 
+   * Для каждой вершины ребра проверить, изолир или нет, иначе выполнять поиск вшить/вглубь
+   * Если цикла не найдено, добавлять ребро
+   */
+  _getMinSkullGraph(sortedEdges: UnionFind[]) {
+    // Индексы добавленных в минимальный скелет вершин
     const addedVertices: Set<number> = new Set();
-    // const isolatedVerticesArray: V[] = []; // надо или нет
 
     // Минимальный скелет графа - набор ребер с весами
-    const minSkullGraph: UnionFind<V>[] = [];
+    const minSkullGraph: UnionFind[] = [];
     
     outer: for (let i = 0; i < sortedEdges.length; i++) {
-      const isV1Added = addedVertices.has(this.verticeArray.indexOf(sortedEdges[i].union[0]));
-      const isV2Added = addedVertices.has(this.verticeArray.indexOf(sortedEdges[i].union[1]));
+      const isV1Added = addedVertices.has(sortedEdges[i].union[0]);
+      const isV2Added = addedVertices.has(sortedEdges[i].union[1]);
 
       if (!isV1Added || !isV2Added) {
+        // Одна из вершин не использовалась - добавляем ребро с ней в минимальный скелет
         minSkullGraph.push(sortedEdges[i]);
       } else {
-        // const newVertice = isV1Added ? sortedEdges[i].union[1] : sortedEdges[i].union[0];
-        // const newVerticeIndex = this.verticeArray.indexOf(sortedEdges[i].union[0]);
-        console.log(sortedEdges[i], 'sortedEdges[i]');
-        
-        
+        // Если обе вершины уже добавлены в минимальный скелет - проверяем отсутствие циклических ссылок
         const visited: number[] = [];
-        this._DFS(this.verticeArray.indexOf(sortedEdges[i].union[0]), visited, minSkullGraph);
+        this._DFS(sortedEdges[i].union[0], visited, minSkullGraph);
 
-        if (i === 5) {
-          console.log(addedVertices, 'added')
-          console.log(visited, 'visited')
-        }
-
-        if (!visited.includes(this.verticeArray.indexOf(sortedEdges[i].union[1]))) {
-          // как проверить, что нет цикла?
-          // искать ТОЛЬКО среди добавленных вершин
+        if (!visited.includes(sortedEdges[i].union[1])) {
           minSkullGraph.push(sortedEdges[i])
         }
       }
 
-      addedVertices.add(this.verticeArray.indexOf(sortedEdges[i].union[0]));
-      addedVertices.add(this.verticeArray.indexOf(sortedEdges[i].union[1]));
+      // Добавляем обе вершины, инцидентные текущему ребру
+      addedVertices.add(sortedEdges[i].union[0]);
+      addedVertices.add(sortedEdges[i].union[1]);
 
-      // if (!isV1Checked) {
-      //   checkedVertices.push(sortedEdges[i].union[0])
-      // }
-
+      // Если все вершины графа уже есть в минимальном скелете - выходим из цикла
       if (addedVertices.size === this.verticeArray.length) {
-        console.log(i, 'i end of iteration')
+        console.log(i, 'number of search cycles')
         break outer;
       }
     }
 
     console.log(minSkullGraph, 'minSkullGraph');
     
-
     return minSkullGraph;
   }
 
-  _sortEdges(): UnionFind<V>[] {
+  /**
+   * Сортировка ребер по их весу
+   */
+  _sortEdges(): UnionFind[] {
     const edges = this._getEdges();
 
     return edges.sort((e1, e2) => {
@@ -78,45 +80,43 @@ class Kruskal<V> {
     });
   }
 
-  _getEdges(): UnionFind<V>[] {
+  /**
+   * Получение рёбер из "взвешенной" матрицы смежности 
+   */
+  _getEdges(): UnionFind[] {
     const visited: number[] = [];
-    const edges: UnionFind<V>[] = [];
+    const edges: UnionFind[] = [];
 
     for (let row = 0; row < this.adjacencyMatrix.length; row++) {
       for (let i = 0; i < this.adjacencyMatrix.length; i++) {
         if (this.adjacencyMatrix[row][i] > 0 && !visited.includes(i)) {
-          edges.push(new UnionFind(this.verticeArray[row], this.verticeArray[i], this.adjacencyMatrix[row][i]))
+          edges.push(new UnionFind(row, i, this.adjacencyMatrix[row][i]))
         }
       }
       visited.push(row);
     }
 
-    // console.log(edges, 'edges');
-
     return edges;
   }
 
-  private _DFS(startIndex: number, visited: number[], minSkullGraph: UnionFind<V>[]) {
-    // Осуществляем глубокий поиск только среди уже добавленных вершин
-    // if (!addedVertices.has(startIndex) || !addedVertices.has(endIndex)) return;
-
-    // const hasAddedEdge = minSkullGraph.find(edge => 
-    //   [startIndex, endIndex].includes(this.verticeArray.indexOf(edge.union[0])) 
-    //     && [startIndex, endIndex].includes(this.verticeArray.indexOf(edge.union[1]))
-    // );
-
-    // if (!hasAddedEdge) return;
-    
+  /**
+   * Глубокий поиск только по добавленным ребрам
+   * @param startIndex 
+   * @param visited 
+   * @param minSkullGraph 
+   */
+  private _DFS(startIndex: number, visited: number[], minSkullGraph: UnionFind[]) {
     visited.push(startIndex);
 
     this.adjacencyMatrix[startIndex].forEach((child: number, childIndex: number) => {
       if (child !== 0) {
+        // Проверка, добавлено ли уже в минимальный скелет ребро из проверяемых смежных вершин
         const hasAddedEdge = minSkullGraph.find(edge => 
-          [startIndex, childIndex].includes(this.verticeArray.indexOf(edge.union[0])) 
-            && [startIndex, childIndex].includes(this.verticeArray.indexOf(edge.union[1]))
+          [startIndex, childIndex].includes(edge.union[0]) 
+            && [startIndex, childIndex].includes(edge.union[1])
         );
 
-        if (!visited.includes(childIndex) /* && addedVertices.has(childIndex) */ && hasAddedEdge) {
+        if (!visited.includes(childIndex) && hasAddedEdge) {
           this._DFS(childIndex, visited, minSkullGraph);
         }
       }
@@ -125,12 +125,15 @@ class Kruskal<V> {
 }
 
 
-class UnionFind<V> {
-  union: [V, V];
+/**
+ * Структура для хранения информации о ребре графа
+ */
+class UnionFind {
+  union: [number, number];
   weight: number;
 
-  constructor(V1: V, V2: V, weight) {
-    this.union = [V1, V2];
+  constructor(v1Index: number, v2Index: number, weight: number) {
+    this.union = [v1Index, v2Index];
     this.weight = weight;
   }
 }
