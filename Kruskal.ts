@@ -1,4 +1,5 @@
 import { graph, AdjacencyMatrixWeighted } from "./AdjacencyMatrixWeighted";
+import { UnionFind } from "./UnionFind";
 
 /**
  * Алгоритм Краскала - поиск в неориентированном взвешенном графе 
@@ -122,20 +123,6 @@ class Kruskal<V> {
       }
     });
   } 
-}
-
-
-/**
- * Структура для хранения информации о ребре графа
- */
-class UnionFind {
-  union: [number, number];
-  weight: number;
-
-  constructor(v1Index: number, v2Index: number, weight: number) {
-    this.union = [v1Index, v2Index];
-    this.weight = weight;
-  }
 }
 
 const algo = new Kruskal(graph);

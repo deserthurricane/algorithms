@@ -36,21 +36,41 @@ graph.addVertice('G'); // 6
 
 // graph.printVerticeArray();
 
-graph.addEdge('A', 'B', 7);
-graph.addEdge('A', 'D', 5);
+/*** algo Kruskal */
+// graph.addEdge('A', 'B', 7);
+// graph.addEdge('A', 'D', 5);
 
-graph.addEdge('B', 'C', 8);
-graph.addEdge('B', 'D', 9);
-graph.addEdge('B', 'E', 7);
+// graph.addEdge('B', 'C', 8);
+// graph.addEdge('B', 'D', 9);
+// graph.addEdge('B', 'E', 7);
 
-graph.addEdge('C', 'E', 5);
+// graph.addEdge('C', 'E', 5);
 
-graph.addEdge('D', 'E', 15);
-graph.addEdge('D', 'F', 6);
+// graph.addEdge('D', 'E', 15);
+// graph.addEdge('D', 'F', 6);
 
-graph.addEdge('E', 'F', 8);
-graph.addEdge('E', 'G', 9);
+// graph.addEdge('E', 'F', 8);
+// graph.addEdge('E', 'G', 9);
 
-graph.addEdge('F', 'G', 11);
+// graph.addEdge('F', 'G', 11);
+
+/*** algo Dijkstra */
+graph.addEdge('A', 'B', 2);
+graph.addEdge('A', 'C', 3);
+graph.addEdge('A', 'D', 6);
+
+graph.addEdge('B', 'C', 4);
+graph.addEdge('B', 'E', 9);
+
+graph.addEdge('C', 'D', 1);
+graph.addEdge('C', 'E', 7);
+graph.addEdge('C', 'F', 6);
+
+graph.addEdge('D', 'F', 4);
+
+graph.addEdge('E', 'F', 1);
+graph.addEdge('E', 'G', 5);
+
+graph.addEdge('F', 'G', 8);
 
 // graph.printMatrix();
