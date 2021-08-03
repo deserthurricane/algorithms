@@ -1,8 +1,10 @@
+import { HashTableElement } from "./HashTableElement";
+
 /**
  * Реализация хэш-таблицы для хранения строковых значений
  * методом цепочек (buckets)
  */
-class HashTable {
+class HashTableChainingMethod {
   protected count: number = 0; // счётчик добавленных элементов
   protected maxCount: number = 5; // Number.MAX_SAFE_INTEGER;
   protected capacity: number = 0.75; // значение заполненности хэш-таблицы, при котором нужно увеличивать ее вместимость и проводить рехэширование
@@ -131,38 +133,8 @@ class HashTable {
   }
 }
 
-/**
- * Структура для хранения элемента в хэш-таблице
- */
-class HashTableElement {
-  protected hashCode: number;
-  protected value: string;
-
-  constructor(hashCode: number, value: string) {
-    this.hashCode = hashCode;
-    this.value = value;
-  }
-
-  /**
-   * Получение хэш-кода и исходного значения
-   */
-  public get() {
-    return {
-      hashCode: this.hashCode,
-      value: this.value
-    }
-  }
-
-  /**
-   * Обновление хэш-кода
-   */
-  public updateHashCode(newHashCode: number) {
-    this.hashCode = newHashCode;
-  }
-}
-
 // test
-const table = new HashTable();
+const table = new HashTableChainingMethod();
 table.add('cat');
 table.add('das');
 table.add('dog');
