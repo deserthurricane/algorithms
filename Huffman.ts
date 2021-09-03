@@ -54,45 +54,17 @@ class HCode {
     const hNodes: HNode[] = [];
 
     while (sortedChars.length > 1 || hNodes.length > 1) {
-      // Достаём последний и предпоследний по значению count элементы
-      // let hNode1: HNode;
-      // let hNode2: HNode;
-
-      // console.log(sortedChars[sortedChars.length-1], 'sortedChars[sortedChars.length-1]');
-      
+      // Достаём последний и предпоследний по значению count элементы      
       const hNode1 = this.getMinEl(sortedChars, hNodes);
       const hNode2 = this.getMinEl(sortedChars, hNodes);
-      // if (hNodes[hNodes.length-1]?.getWeight() < sortedChars[sortedChars.length-1]?.[1]) {
-      //   hNode1 = hNodes.pop();
-      // } else {
-      //   const lastChar = sortedChars.pop();
-      //   console.log(lastChar, 'lastChar1');
-      //   hNode1 = new HNode(lastChar[0], lastChar[1], null);
-      // }
 
-      // if (hNodes[hNodes.length-1]?.getWeight() < sortedChars[sortedChars.length-1]?.[1]) {
-      //   hNode2 = hNodes.pop();
-      // } else {
-      //   const lastChar = sortedChars.pop();
-      //   console.log(lastChar, 'lastChar2');
-        
-      //   hNode2 = new HNode(lastChar[0], lastChar[1], null);
-      // }
-
-      // console.log(hNode1, 'hNode1');
-      // console.log(hNode2, 'hNode2');
-      
-
+      // Создаём новый узел дерева Хаффмана
       const sumCount = hNode1.getWeight() + hNode2.getWeight();
-      const hTreeNode = new HNode(null, sumCount, [hNode1, hNode2]);
+      const hTreeNode = new HNode(null, sumCount, [hNode1, hNode2]);      
 
-      // console.log(hTreeNode, 'hTreeNode');
-      
-
+      // Кладем его в очередь созданных узлов
       this.enqueueEl(hNodes, hTreeNode);
     }
-
-    // console.log(hNodes, 'hNodes');
 
     console.log(sortedChars, 'sortedChars final');
     console.log(hNodes, 'hNodes final');
@@ -103,8 +75,7 @@ class HCode {
 
     const sumCount = hNode1.getWeight() + hNode2.getWeight();
     const hTreeRoot = new HNode(null, sumCount, [hNode1, hNode2]);
-
-    console.log(hTreeRoot, 'root');
+    
     return hTreeRoot;
   }
 
