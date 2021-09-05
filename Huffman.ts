@@ -34,7 +34,8 @@ class HNode {
  */
 class HCode {
   private charTable: Map<number, number>;
-  private hTree: HNode;
+  private hTreeRoot: HNode;
+  private hCode: Map<number, number> = new Map();
 
   constructor(charTable: Map<number, number>) {
     this.charTable = charTable;
@@ -42,18 +43,69 @@ class HCode {
 
   main() {
     // Создать дерево
-    this.createTree();
+    this.createHTree();
 
     // Пройтись по дереву и создать код Хаффмана
+    this.createHCode();
   }
 
-  createTree(): HNode {
+  createHCode(): void {
+    const charCodesUTF: number[] = Array.from(this.charTable.keys());
+    console.log(charCodesUTF[0], 'charCodesUTF[0]');
+    
+    // for (let charCodeUTF of charCodesUTF) {
+    //   const result = this.createBinaryCharCode(charCodeUTF);
+    //   this.hCode.set(charCodeUTF, result);
+    // }
+    this.createBinaryCharCode(66);
+
+    console.log(this.hCode, 'this.hCode');
+    
+  }
+
+  createBinaryCharCode(charCodeUTF: number): any {
+    let indexes: Array<0|1> = [];
+    const found = {
+      isFound: false
+    };
+
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], charCodeUTF, 0, indexes, found);
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], charCodeUTF, 1, indexes, found);
+
+    console.log(indexes, 'indexes');
+  }
+
+  deepNodeSearch(node: HNode, charCodeUTF: number, nodeIndex: 0|1, indexes: number[], found: { isFound: boolean }) {
+    console.log(node, 'node');
+
+    if (found.isFound) return;
+    
+    indexes.push(nodeIndex);
+
+    const subNodes = node.getSubNodes();
+
+    if (subNodes === null) {
+      if (node.getCharCode() === charCodeUTF) {
+        found.isFound = true;
+        return;
+      } else {
+        indexes = []
+      }
+    } else {
+      this.deepNodeSearch(subNodes[0], charCodeUTF, 0, indexes, found);
+      this.deepNodeSearch(subNodes[1], charCodeUTF, 1, indexes, found);
+    }
+  }
+
+  createHTree(): void {
     const sortedChars: Array<[number, number]> = this.sortCharTable();
-    console.log(sortedChars, 'sortedChars');
+    // console.log(sortedChars, 'sortedChars');
     
     const hNodes: HNode[] = [];
 
     while (sortedChars.length > 1 || hNodes.length > 1) {
+      // console.log(hNodes, 'hNodes');
+      
       // Достаём последний и предпоследний по значению count элементы      
       const hNode1 = this.getMinEl(sortedChars, hNodes);
       const hNode2 = this.getMinEl(sortedChars, hNodes);
@@ -66,17 +118,22 @@ class HCode {
       this.enqueueEl(hNodes, hTreeNode);
     }
 
-    console.log(sortedChars, 'sortedChars final');
-    console.log(hNodes, 'hNodes final');
+    this.hTreeRoot = this.setRoot(sortedChars, hNodes);
+  }
 
-    const lastChar = sortedChars.pop();
-    const hNode1 = new HNode(lastChar[0], lastChar[1], null);
-    const hNode2 = hNodes.pop();
+  private setRoot(sortedChars: [number, number][], hNodes: HNode[]): HNode {
+    if (sortedChars.length === 0) {
+      return hNodes.pop()
+    } else {
+      const lastChar = sortedChars.pop();
+      const hNode1 = new HNode(lastChar[0], lastChar[1], null);
+      const hNode2 = hNodes.pop();
 
-    const sumCount = hNode1.getWeight() + hNode2.getWeight();
-    const hTreeRoot = new HNode(null, sumCount, [hNode1, hNode2]);
-    
-    return hTreeRoot;
+      const sumCount = hNode1.getWeight() + hNode2.getWeight();
+      const hTreeRoot = new HNode(null, sumCount, [hNode1, hNode2]);
+      
+      return hTreeRoot;
+    }
   }
 
   private sortCharTable(): Array<[number, number]> {
@@ -89,22 +146,13 @@ class HCode {
     if (!arr.length) {
       arr[0] = newEl;
     } else {
-      const lastEl = arr[arr.length - 1];
-
-      arr[arr.length - 1] = newEl;
-      arr[arr.length] = lastEl;
+      // Ставим в начало списка элемент с бОльшим весом
+      arr.unshift(newEl);
     }
   }
 
   private getMinEl(sortedChars: Array<[number, number]>, hNodes: HNode[]) {
-    console.log(hNodes, 'hNodes');
-    
     let minNode: HNode;
-
-    // if (sortedChars.length === 1) {
-    //   minNode = hNodes.pop();
-    //   return minNode;
-    // }
 
     if (hNodes.length === 0) {
       const lastChar = sortedChars.pop();
@@ -112,10 +160,15 @@ class HCode {
       return minNode;
     }
 
+    if (sortedChars.length === 0) {
+      minNode = hNodes.pop();
+      return minNode;
+    }
+
     if (hNodes[hNodes.length-1].getWeight() < sortedChars[sortedChars.length-1][1]) {
       minNode = hNodes.pop();
     } else {
-      const lastChar = sortedChars.pop();
+      const lastChar = sortedChars.pop();      
       minNode = new HNode(lastChar[0], lastChar[1], null);
     }
 
@@ -153,5 +206,20 @@ const charTable = createCharTable(text);
 // console.log(charTable, 'charTable');
 
 const algo = new HCode(charTable);
+console.log('###################################################################################################');
+
 
 algo.main();
+
+// const text2 = 'бородавка';
+// // б - 1
+// // о - 2
+// // р - 1
+// // д - 1
+// // в - 1
+// // к - 1
+// // а - 2
+// const charTable2 = createCharTable(text2);
+// const algo2 = new HCode(charTable2);
+
+// algo2.main();
