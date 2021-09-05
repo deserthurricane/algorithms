@@ -1,6 +1,9 @@
 import { AdjacencyMatrixWeighted, graph } from './AdjacencyMatrixWeighted';
-import { AdjacencyMatrix } from './AdjacencyMatrix';
 
+/**
+ * Алгоритм Дейкстры 
+ * Находит кратчайшие пути от одной из вершин графа до всех остальных
+ */
 class Dijkstra<V> {
   verticeArray: V[];
   matrix: number[][];
