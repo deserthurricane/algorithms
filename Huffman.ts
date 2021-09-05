@@ -35,7 +35,7 @@ class HNode {
 class HCode {
   private charTable: Map<string, number>;
   private hTreeRoot: HNode;
-  private hCode: Map<number, number> = new Map();
+  private hCode: Map<string, number[]> = new Map();
 
   constructor(charTable: Map<string, number>) {
     this.charTable = charTable;
@@ -53,17 +53,15 @@ class HCode {
     const charCodesUTF: string[] = Array.from(this.charTable.keys());
     console.log(charCodesUTF[0], 'charCodesUTF[0]');
     
-    // for (let charCodeUTF of charCodesUTF) {
-    //   const result = this.createBinaryCharCode(charCodeUTF);
-    //   this.hCode.set(charCodeUTF, result);
-    // }
-    this.createBinaryCharCode(66);
+    for (let charCodeUTF of charCodesUTF) {
+      const result = this.createBinaryCharCode(charCodeUTF);
+      this.hCode.set(charCodeUTF, result);
+    }
 
     console.log(this.hCode, 'this.hCode');
-    
   }
 
-  createBinaryCharCode(charCodeUTF: number): any {
+  createBinaryCharCode(charCodeUTF: string): number[] {
     let indexes: Array<0|1> = [];
     const found = {
       isFound: false
@@ -72,11 +70,12 @@ class HCode {
     const visited: WeakMap<HNode, boolean> = new Map();
 
 
-    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], 'B', 0, visited, found, indexes);
-    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], 'B', 1, visited, found, indexes);
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], charCodeUTF, 0, visited, found, indexes);
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], charCodeUTF, 1, visited, found, indexes);
 
     console.log(indexes, 'indexes');
     console.log(visited, 'visited');
+    return indexes;
   }
 
   deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
@@ -84,43 +83,32 @@ class HCode {
 
     if (found.isFound) return;
     
-    // visited.set(node, false);
-    // console.log(indexes, 'indexes');
-    
-    console.log(node.getWeight(), 'node weight');
-    
-
     const subNodes = node.getSubNodes();
 
     if (subNodes === null) {
       if (node.getCharCode() === charCodeUTF) {
         found.isFound = true;
         visited.set(node, true);
-        indexes.push(nodeIndex);
-        return;
-      } else {
-        // visited.set(node, false)
-      }
+        indexes.unshift(nodeIndex);
+      } 
+      return;
     } else {
       this.deepNodeSearch(subNodes[0], charCodeUTF, 0, visited, found, indexes);
       this.deepNodeSearch(subNodes[1], charCodeUTF, 1, visited, found, indexes);
 
       if (visited.get(subNodes[0]) === true || visited.get(subNodes[1]) === true) {
         visited.set(node, true);
-        indexes.push(nodeIndex);
+        indexes.unshift(nodeIndex);
       }
     }
   }
 
   createHTree(): void {
     const sortedChars: Array<[string, number]> = this.sortCharTable();
-    // console.log(sortedChars, 'sortedChars');
     
     const hNodes: HNode[] = [];
 
-    while (sortedChars.length > 1 || hNodes.length > 1) {
-      // console.log(hNodes, 'hNodes');
-      
+    while (sortedChars.length > 1 || hNodes.length > 1) {      
       // Достаём последний и предпоследний по значению count элементы      
       const hNode1 = this.getMinEl(sortedChars, hNodes);
       const hNode2 = this.getMinEl(sortedChars, hNodes);
@@ -235,15 +223,15 @@ console.log('###################################################################
 
 algo.main();
 
-// const text2 = 'бородавка';
-// // б - 1
-// // о - 2
-// // р - 1
-// // д - 1
-// // в - 1
-// // к - 1
-// // а - 2
-// const charTable2 = createCharTable(text2);
-// const algo2 = new HCode(charTable2);
+const text2 = 'бородавка';
+// б - 1
+// о - 2
+// р - 1
+// д - 1
+// в - 1
+// к - 1
+// а - 2
+const charTable2 = createCharTable(text2);
+const algo2 = new HCode(charTable2);
 
-// algo2.main();
+algo2.main();
