@@ -2,11 +2,11 @@
  * Узел в дереве Хаффмана
  */
 class HNode {
-  private charCode: null | number;
+  private charCode: null | number | string;
   private weight: number = 0;
   private subNodes: [HNode, HNode] | null;
 
-  constructor(charCode: number | null, weight: number, subNodes: [HNode, HNode] | null) {
+  constructor(charCode: number | null | string, weight: number, subNodes: [HNode, HNode] | null) {
     this.charCode = charCode;
     this.weight = weight;
     this.subNodes = subNodes;
@@ -33,11 +33,11 @@ class HNode {
  * Код Хаффмана
  */
 class HCode {
-  private charTable: Map<number, number>;
+  private charTable: Map<string, number>;
   private hTreeRoot: HNode;
   private hCode: Map<number, number> = new Map();
 
-  constructor(charTable: Map<number, number>) {
+  constructor(charTable: Map<string, number>) {
     this.charTable = charTable;
   }
 
@@ -50,7 +50,7 @@ class HCode {
   }
 
   createHCode(): void {
-    const charCodesUTF: number[] = Array.from(this.charTable.keys());
+    const charCodesUTF: string[] = Array.from(this.charTable.keys());
     console.log(charCodesUTF[0], 'charCodesUTF[0]');
     
     // for (let charCodeUTF of charCodesUTF) {
@@ -69,36 +69,51 @@ class HCode {
       isFound: false
     };
 
-    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], charCodeUTF, 0, indexes, found);
-    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], charCodeUTF, 1, indexes, found);
+    const visited: WeakMap<HNode, boolean> = new Map();
+
+
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], 'B', 0, visited, found, indexes);
+    this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], 'B', 1, visited, found, indexes);
 
     console.log(indexes, 'indexes');
+    console.log(visited, 'visited');
   }
 
-  deepNodeSearch(node: HNode, charCodeUTF: number, nodeIndex: 0|1, indexes: number[], found: { isFound: boolean }) {
+  deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
     console.log(node, 'node');
 
     if (found.isFound) return;
     
-    indexes.push(nodeIndex);
+    // visited.set(node, false);
+    // console.log(indexes, 'indexes');
+    
+    console.log(node.getWeight(), 'node weight');
+    
 
     const subNodes = node.getSubNodes();
 
     if (subNodes === null) {
       if (node.getCharCode() === charCodeUTF) {
         found.isFound = true;
+        visited.set(node, true);
+        indexes.push(nodeIndex);
         return;
       } else {
-        indexes = []
+        // visited.set(node, false)
       }
     } else {
-      this.deepNodeSearch(subNodes[0], charCodeUTF, 0, indexes, found);
-      this.deepNodeSearch(subNodes[1], charCodeUTF, 1, indexes, found);
+      this.deepNodeSearch(subNodes[0], charCodeUTF, 0, visited, found, indexes);
+      this.deepNodeSearch(subNodes[1], charCodeUTF, 1, visited, found, indexes);
+
+      if (visited.get(subNodes[0]) === true || visited.get(subNodes[1]) === true) {
+        visited.set(node, true);
+        indexes.push(nodeIndex);
+      }
     }
   }
 
   createHTree(): void {
-    const sortedChars: Array<[number, number]> = this.sortCharTable();
+    const sortedChars: Array<[string, number]> = this.sortCharTable();
     // console.log(sortedChars, 'sortedChars');
     
     const hNodes: HNode[] = [];
@@ -121,7 +136,7 @@ class HCode {
     this.hTreeRoot = this.setRoot(sortedChars, hNodes);
   }
 
-  private setRoot(sortedChars: [number, number][], hNodes: HNode[]): HNode {
+  private setRoot(sortedChars: [string, number][], hNodes: HNode[]): HNode {
     if (sortedChars.length === 0) {
       return hNodes.pop()
     } else {
@@ -136,7 +151,7 @@ class HCode {
     }
   }
 
-  private sortCharTable(): Array<[number, number]> {
+  private sortCharTable(): Array<[string, number]> {
     return [...this.charTable.entries()].sort(([charCode1, count1], [charCode2, count2]) => {
       return count2 > count1 ? 1 : -1;
     });
@@ -151,7 +166,7 @@ class HCode {
     }
   }
 
-  private getMinEl(sortedChars: Array<[number, number]>, hNodes: HNode[]) {
+  private getMinEl(sortedChars: Array<[string, number]>, hNodes: HNode[]) {
     let minNode: HNode;
 
     if (hNodes.length === 0) {
@@ -176,17 +191,26 @@ class HCode {
   }
 }
 
-function createCharTable(text: string): Map<number, number> {
+function createCharTable(text: string): Map<string, number> {
   const charMap = new Map();
 
-  text.split('').forEach(char => {
-    const charCode = char.charCodeAt(0);
+  // text.split('').forEach(char => {
+  //   const charCode = char.charCodeAt(0);
 
-    if (!charMap.has(charCode)) {
-      charMap.set(charCode, 1);
+  //   if (!charMap.has(charCode)) {
+  //     charMap.set(charCode, 1);
+  //   } else {
+  //     const count = charMap.get(charCode);
+  //     charMap.set(charCode, count + 1);
+  //   }
+  // });
+
+  text.split('').forEach(char => {
+    if (!charMap.has(char)) {
+      charMap.set(char, 1);
     } else {
-      const count = charMap.get(charCode);
-      charMap.set(charCode, count + 1);
+      const count = charMap.get(char);
+      charMap.set(char, count + 1);
     }
   });
 
