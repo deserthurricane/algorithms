@@ -35,18 +35,60 @@ class HNode {
 class HCode {
   private charTable: Map<string, number>;
   private hTreeRoot: HNode;
-  private hCode: Map<string, number[]> = new Map();
+  private hCode: Map<string, string> = new Map();
+  private text: string;
 
-  constructor(charTable: Map<string, number>) {
+  constructor(text: string, charTable: Map<string, number>) {
     this.charTable = charTable;
+    this.text = text;
   }
 
-  main() {
+  decode() {
+    // Для простоты тестирования декодируем то же сообщение, что мы кодировали
+    let encodedText = this.encode();
+    let decodedText = '';
+
+    while (encodedText.length > 0) {
+      const [char, code] = this.findPrefix(encodedText);
+      decodedText += char;
+      encodedText = encodedText.slice(code.length);
+      console.log(encodedText, 'encodedText');
+      
+    }
+
+    console.log(decodedText, 'decodedText');
+    
+    return decodedText;
+  }
+
+  findPrefix(encodedText: string): [string, string] {
+    console.log(encodedText, 'encodedText');
+    
+    const charCode = Array.from(this.hCode.entries())
+      .find(([key, value]) => encodedText.startsWith(value));
+
+    console.log(charCode, 'charCode');
+    
+    return charCode;
+  }
+
+  encode(): string {
     // Создать дерево
     this.createHTree();
 
     // Пройтись по дереву и создать код Хаффмана
     this.createHCode();
+
+    console.log(this.createBinaryString(), 'binaryString');
+    
+    return this.createBinaryString();
+  }
+
+  createBinaryString(): string {
+    return this.text
+      .split('')
+      .map(char => this.hCode.get(char))
+      .join('');
   }
 
   createHCode(): void {
@@ -59,9 +101,11 @@ class HCode {
     }
 
     console.log(this.hCode, 'this.hCode');
+    console.log(Array.from(this.hCode.entries()), 'enttries');
+    
   }
 
-  createBinaryCharCode(charCodeUTF: string): number[] {
+  createBinaryCharCode(charCodeUTF: string): string {
     let indexes: Array<0|1> = [];
     const found = {
       isFound: false
@@ -75,7 +119,7 @@ class HCode {
 
     console.log(indexes, 'indexes');
     console.log(visited, 'visited');
-    return indexes;
+    return indexes.join('');
   }
 
   deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
@@ -207,31 +251,27 @@ function createCharTable(text: string): Map<string, number> {
 
 
 /** TEST */
-const text = 'ABRAKADABRA';
+const text1 = 'ABRAKADABRA';
 // A - 5
 // B - 2
 // R - 2
 // K - 1
 // D - 1
-const charTable = createCharTable(text);
+const charTable = createCharTable(text1);
 
 // console.log(charTable, 'charTable');
 
-const algo = new HCode(charTable);
+const algo = new HCode(text1, charTable);
 console.log('###################################################################################################');
 
 
-algo.main();
+algo.encode();
+algo.decode();
 
-const text2 = 'бородавка';
-// б - 1
-// о - 2
-// р - 1
-// д - 1
-// в - 1
-// к - 1
-// а - 2
+const text2 = 'Мороз и солнце! День чудесный';
+
 const charTable2 = createCharTable(text2);
-const algo2 = new HCode(charTable2);
+const algo2 = new HCode(text2, charTable2);
 
-algo2.main();
+algo2.encode();
+algo2.decode();
