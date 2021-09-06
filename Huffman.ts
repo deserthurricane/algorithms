@@ -12,10 +12,6 @@ class HNode {
     this.subNodes = subNodes;
   }
 
-  // public setSubNode(order: 0 | 1, node: HNode) {
-  //   this.subNodes[order] = node;
-  // }
-
   public getWeight() {
     return this.weight;
   }
@@ -30,7 +26,7 @@ class HNode {
 }
 
 /**
- * Код Хаффмана
+ * Код Хаффмана - алгоритм сжатия любых данных
  */
 class HCode {
   private charTable: Map<string, number>;
@@ -43,17 +39,41 @@ class HCode {
     this.text = text;
   }
 
-  decode() {
+  /**
+   * Кодирование символов текста в "бинарную строку"
+   */
+  public encode(): string {
+    // Создать дерево
+    this.createHTree();
+
+    // Пройтись по дереву и создать код Хаффмана
+    this.createHCode();
+
+    // Создать "бинарную строку"
+    const binaryString = this.createBinaryString();
+
+    console.log(binaryString.length / 8, 'BYTE COUNT');
+    console.log(this.text.length, 'INITIAL SYMBOLS BYTE COUNT');
+    console.log(this.text.length - (binaryString.length / 8), 'BYTE ECONOMY');
+    
+    
+    return binaryString;
+  }
+
+  /**
+   * Декодирование из бинарной строки в обычный текст
+   */
+  public decode() {
     // Для простоты тестирования декодируем то же сообщение, что мы кодировали
     let encodedText = this.encode();
     let decodedText = '';
 
+    const hCodeEntries = Array.from(this.hCode.entries());
+
     while (encodedText.length > 0) {
-      const [char, code] = this.findPrefix(encodedText);
+      const [char, code] = this.findPrefix(encodedText, hCodeEntries);
       decodedText += char;
       encodedText = encodedText.slice(code.length);
-      console.log(encodedText, 'encodedText');
-      
     }
 
     console.log(decodedText, 'decodedText');
@@ -61,51 +81,39 @@ class HCode {
     return decodedText;
   }
 
-  findPrefix(encodedText: string): [string, string] {
-    console.log(encodedText, 'encodedText');
-    
-    const charCode = Array.from(this.hCode.entries())
-      .find(([key, value]) => encodedText.startsWith(value));
-
-    console.log(charCode, 'charCode');
-    
-    return charCode;
+  /**
+   * Поиск префикса из кода Хаффмана в "бинарной строке"
+   */
+  private findPrefix(encodedText: string, hCodeEntries: Array<[string, string]>): [string, string] {    
+    return hCodeEntries.find(([key, value]) => encodedText.startsWith(value));
   }
 
-  encode(): string {
-    // Создать дерево
-    this.createHTree();
-
-    // Пройтись по дереву и создать код Хаффмана
-    this.createHCode();
-
-    console.log(this.createBinaryString(), 'binaryString');
-    
-    return this.createBinaryString();
-  }
-
-  createBinaryString(): string {
+  /**
+   * Кодирование символов исходного текста из UTF-8 в бинарный код
+   */
+  private createBinaryString(): string {
     return this.text
       .split('')
       .map(char => this.hCode.get(char))
       .join('');
   }
 
-  createHCode(): void {
+  /**
+   * Создание кода Хаффмана по полученной таблице частотности символов
+   */
+  private createHCode(): void {
     const charCodesUTF: string[] = Array.from(this.charTable.keys());
-    console.log(charCodesUTF[0], 'charCodesUTF[0]');
     
     for (let charCodeUTF of charCodesUTF) {
       const result = this.createBinaryCharCode(charCodeUTF);
       this.hCode.set(charCodeUTF, result);
     }
-
-    console.log(this.hCode, 'this.hCode');
-    console.log(Array.from(this.hCode.entries()), 'enttries');
-    
   }
 
-  createBinaryCharCode(charCodeUTF: string): string {
+  /**
+   * Построение кода Хаффмана для одного символа
+   */
+  private createBinaryCharCode(charCodeUTF: string): string {
     let indexes: Array<0|1> = [];
     const found = {
       isFound: false
@@ -113,18 +121,17 @@ class HCode {
 
     const visited: WeakMap<HNode, boolean> = new Map();
 
-
+    // Запускаем глубокий поиск по левой и правой ветвям дерева
     this.deepNodeSearch(this.hTreeRoot.getSubNodes()[0], charCodeUTF, 0, visited, found, indexes);
     this.deepNodeSearch(this.hTreeRoot.getSubNodes()[1], charCodeUTF, 1, visited, found, indexes);
 
-    console.log(indexes, 'indexes');
-    console.log(visited, 'visited');
     return indexes.join('');
   }
 
-  deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
-    console.log(node, 'node');
-
+  /**
+   * Рекурсивная реализация глубокого поиска для 1 узла
+   */
+  private deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
     if (found.isFound) return;
     
     const subNodes = node.getSubNodes();
@@ -147,7 +154,10 @@ class HCode {
     }
   }
 
-  createHTree(): void {
+  /**
+   * Создаем бинарное дерево с "путями" к символам для последующего составления кода Хаффмана
+   */
+  private createHTree(): void {
     const sortedChars: Array<[string, number]> = this.sortCharTable();
     
     const hNodes: HNode[] = [];
@@ -183,12 +193,18 @@ class HCode {
     }
   }
 
+  /**
+   * Сортируем символы по частотности употребления в тексте (desc)
+   */
   private sortCharTable(): Array<[string, number]> {
     return [...this.charTable.entries()].sort(([charCode1, count1], [charCode2, count2]) => {
       return count2 > count1 ? 1 : -1;
     });
   }
 
+  /**
+   * Кладем новую ноду бинарного дерева в очередь из подобных нод 
+   */
   private enqueueEl<T>(arr: Array<any>, newEl: T): void {
     if (!arr.length) {
       arr[0] = newEl;
@@ -198,6 +214,9 @@ class HCode {
     }
   }
 
+  /**
+   * Получаем минимальный по весу элемент из двух очередей - очереди с символами текста и очереди с создаваемыми нодами 
+   */
   private getMinEl(sortedChars: Array<[string, number]>, hNodes: HNode[]) {
     let minNode: HNode;
 
@@ -223,19 +242,11 @@ class HCode {
   }
 }
 
+/**
+ * Утилита для создания таблицы частотности символов
+ */
 function createCharTable(text: string): Map<string, number> {
   const charMap = new Map();
-
-  // text.split('').forEach(char => {
-  //   const charCode = char.charCodeAt(0);
-
-  //   if (!charMap.has(charCode)) {
-  //     charMap.set(charCode, 1);
-  //   } else {
-  //     const count = charMap.get(charCode);
-  //     charMap.set(charCode, count + 1);
-  //   }
-  // });
 
   text.split('').forEach(char => {
     if (!charMap.has(char)) {
@@ -258,19 +269,49 @@ const text1 = 'ABRAKADABRA';
 // K - 1
 // D - 1
 const charTable = createCharTable(text1);
-
-// console.log(charTable, 'charTable');
-
+console.log(charTable, 'charTable');
 const algo = new HCode(text1, charTable);
-console.log('###################################################################################################');
-
 
 algo.encode();
 algo.decode();
 
-const text2 = 'Мороз и солнце! День чудесный';
+console.log('###################################################################################################');
+
+const text2 = `
+  Мороз и солнце; день чудесный!
+  Еще ты дремлешь, друг прелестный —
+  Пора, красавица, проснись:
+  Открой сомкнуты негой взоры
+  Навстречу северной Авроры,
+  Звездою севера явись!
+  Вечор, ты помнишь, вьюга злилась,
+  На мутном небе мгла носилась;
+  Луна, как бледное пятно,
+  Сквозь тучи мрачные желтела,
+  И ты печальная сидела —
+  А нынче... погляди в окно:
+  Под голубыми небесами
+  Великолепными коврами,
+  Блестя на солнце, снег лежит;
+  Прозрачный лес один чернеет,
+  И ель сквозь иней зеленеет,
+  И речка подо льдом блестит.
+  Вся комната янтарным блеском
+  Озарена. Веселым треском
+  Трещит затопленная печь.
+  Приятно думать у лежанки.
+  Но знаешь: не велеть ли в санки
+  Кобылку бурую запречь?
+  Скользя по утреннему снегу,
+  Друг милый, предадимся бегу
+  Нетерпеливого коня
+  И навестим поля пустые,
+  Леса, недавно столь густые,
+  И берег, милый для меня.
+`;
 
 const charTable2 = createCharTable(text2);
+console.log(charTable2, 'charTable2');
 const algo2 = new HCode(text2, charTable2);
 
 algo2.encode();
