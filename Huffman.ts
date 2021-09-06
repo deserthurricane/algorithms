@@ -1,3 +1,5 @@
+import { GRANATOVYI_BRASLET } from "./texts";
+
 /**
  * Узел в дереве Хаффмана
  */
@@ -55,7 +57,7 @@ class HCode {
     console.log(binaryString.length / 8, 'BYTE COUNT');
     console.log(this.text.length, 'INITIAL SYMBOLS BYTE COUNT');
     console.log(this.text.length - (binaryString.length / 8), 'BYTE ECONOMY');
-    
+    console.log(100 - ((binaryString.length / 8) / this.text.length) * 100, '% ECONOMY');
     
     return binaryString;
   }
@@ -76,7 +78,7 @@ class HCode {
       encodedText = encodedText.slice(code.length);
     }
 
-    console.log(decodedText, 'decodedText');
+    // console.log(decodedText, 'decodedText');
     
     return decodedText;
   }
@@ -108,6 +110,8 @@ class HCode {
       const result = this.createBinaryCharCode(charCodeUTF);
       this.hCode.set(charCodeUTF, result);
     }
+
+    console.log(this.hCode, 'this.hCode');
   }
 
   /**
@@ -316,3 +320,12 @@ const algo2 = new HCode(text2, charTable2);
 
 algo2.encode();
 algo2.decode();
+
+
+/*** BIG TEXT */
+const charTable3 = createCharTable(GRANATOVYI_BRASLET);
+console.log(charTable3, 'charTable3');
+const algo3 = new HCode(GRANATOVYI_BRASLET, charTable3);
+
+algo3.encode();
+algo3.decode();
