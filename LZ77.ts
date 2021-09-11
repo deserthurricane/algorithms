@@ -4,55 +4,67 @@
  */
 class LZ77 {
   private text: string;
-  private charTable: Array<[number, number, string]> = [];
+  private charTable: Record<string, [number, number]> = {};
+  private readonly bufferLength = 4;
+  private readonly dictLength = 6;
 
   constructor(text: string) {
     this.text = text;
   }
 
   encode() {
-    let i = 0;
-    let prefix = '';
+    let bufferIndex = 0;
+
     // const charTable: Array<[number, number, string]> = [];
 
-    while (i <= this.text.length) {
-      console.log(prefix, 'prefix');
+    while (bufferIndex <= this.text.length) {
+      // Обработка первого случае - у нас еще нет словаря
+      if (bufferIndex === 0) {
+        this.charTable[this.text[bufferIndex]] = [0, 0];
+        bufferIndex++;
+        // dictIndex++;
+        continue;
+      }
+
+      let buffer = this.text.substr(bufferIndex, this.dictLength);
+
+      console.log(buffer, 'buffer');
       
-      if (!prefix.startsWith(this.text[i])) {
+      const charIsInTable = Object.keys(this.charTable).includes(buffer[bufferIndex]);
+
+      if (!charIsInTable) {
         // Впервые встречаем такой символ
-        this.charTable.push([0, 0, this.text[i]]);
+        this.charTable[this.text[bufferIndex]] = [0, 0];
 
-        if (!prefix) {
-          prefix = this.text[i];
-        }
-
-        i++;
+        bufferIndex++;
+        // dictIndex++;
       } else {
-        // prefix += this.text[i];
+        console.log('match');
+        
+        // buffer += this.text[i];
         let matchCount = 1;
 
-        while (prefix.startsWith(this.text.substr(i, matchCount)) && matchCount <= this.text.length) {
-          if (i === 5) {
-            console.log(prefix, 'prefix A');
-            console.log(this.text.substr(i, matchCount), '');
-            
-          }
+        // let bufferPrefix = buffer[bufferIndex];
+        /**
+         * ИДЕЯ: проверять, что буква есть в словаре
+         */
 
+        let buffer = this.text.substr(bufferIndex, this.dictLength);
+        let charIsInTable = Object.keys(this.charTable).includes(buffer[bufferIndex]);
 
+        while (charIsInTable && matchCount <= this.bufferLength) {
+          // buffer += this.text[bufferIndex];
           matchCount++;
+          bufferIndex++;
+          buffer = this.text.substr(bufferIndex, this.dictLength);
+          charIsInTable = Object.keys(this.charTable).includes(buffer[bufferIndex]);
         }
 
-        prefix = this.text.slice(0, matchCount - 1);
-
-        if (i === 5) {
-          console.log(prefix, 'prefix A');
-          console.log(matchCount, 'matchCount');
-          
-        }
-
-        this.charTable.push([i, matchCount - 1, this.text[i + 1]]);
-        i += matchCount; 
+        this.charTable[this.text[bufferIndex]] = [bufferIndex - matchCount, matchCount - 1]; 
         
+        // if (matchCount > this.dictLength) {
+        //   dictIndex = bufferIndex - this.dictLength;
+        // }
       }
     }
 
@@ -61,7 +73,9 @@ class LZ77 {
   }
 }
 
-const algo = new LZ77('ABRAKADABRA');
+// const algo = new LZ77('ABRAKADABRA');
+const algo = new LZ77('aacaaca');
+// bcabaaac
 algo.encode();
 
-console.log('A'.startsWith('ABRA'));
+// console.log('A'.startsWith('ABRA'));
