@@ -2,7 +2,7 @@
  * Алгоритм Lempel-Ziv 1977
  * - динамическое накопление словаря при сжатии данных
  */
-class LZ77 {
+class LZ77_1 {
   private text: string;
   private charTable: Record<string, [number, number]> = {};
   private readonly bufferLength = 4;
@@ -74,7 +74,7 @@ class LZ77 {
 }
 
 // const algo = new LZ77('ABRAKADABRA');
-const algo = new LZ77('aacaaca');
+const algo = new LZ77_1('aacaaca');
 // bcabaaac
 algo.encode();
 
