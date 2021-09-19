@@ -1,8 +1,10 @@
 // Алгоритм Lempel-Ziv 1977 - динамическое накопление словаря при сжатии данных
 
+type CharTableValue = [number, number, string];
+
 class LZ77 {
   text = '';
-  charTable = {};
+  charTable: Array<CharTableValue> = [];
   bufferLength = 4;
   dictLength = 11; // вопрос! как правильно выбрать размер?
 
@@ -16,18 +18,24 @@ class LZ77 {
     while (cursor < this.text.length) {
       const currentChar = this.text[cursor];
 
-      if (this.charTable[currentChar]) {
+      if (this.hasCharTableCurrentCharInWindow(currentChar, cursor)) {
         const [position, length] = this.findLongestSubstring(cursor);
         const newChar = this.text[cursor + length] || null; // null - если строка закончилась
-        this.charTable[newChar] = [position, length];
+        this.charTable.push([position, length, newChar]);
         cursor += length + 1;
       } else {
-        this.charTable[currentChar] = [0, 0];
+        this.charTable.push([0, 0, currentChar]);
         cursor++;
       }
 
       console.log(this.charTable);
     }
+  }
+
+  // есть ли в словаре в интервале скользящего окна искомый символ
+  hasCharTableCurrentCharInWindow(char: string, cursor: number) {
+    const start = cursor - this.dictLength > 0 ? cursor - this.dictLength : 0;
+    return this.charTable.slice(start).find(value => value[2] === char);
   }
 
   findLongestSubstring(cursor: number) {
