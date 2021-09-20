@@ -1,15 +1,18 @@
 // Алгоритм Lempel-Ziv 1977 - динамическое накопление словаря при сжатии данных
 
+import { GRANATOVYI_BRASLET } from "./texts";
+
 type CharTableValue = [number, number, string | null];
 
 class LZ77 {
   text: string;
   charTable: Array<CharTableValue> = [];
-  bufferLength = 4;
-  dictLength = 6; // вопрос! как правильно выбрать размер?
+  bufferLength = 1000;
+  dictLength = 32000; // вопрос! как правильно выбрать размер?
 
   constructor(text: string) {
     this.text = text;
+    console.log(this.text.length, 'this.text.length');
   }
 
   public encode() {
@@ -29,8 +32,11 @@ class LZ77 {
         cursor++;
       }
 
-      console.log(this.charTable);
+      // console.log(this.charTable);
     }
+
+    // console.log(this.charTable);
+    console.log(this.charTable.length * 3, 'this.charTable.length');
   }
 
   public decode(): string {
@@ -137,3 +143,7 @@ algor2.decode();
 const algor3 = new LZ77('КОСИЛКОСОЙКОСОЙКОСОЙ');
 algor3.encode();
 algor3.decode();
+
+const algor4 = new LZ77(GRANATOVYI_BRASLET);
+algor4.encode();
+algor4.decode();
