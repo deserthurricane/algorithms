@@ -12,7 +12,7 @@ class LZ77 {
     this.text = text;
   }
 
-  encode() {
+  public encode() {
     let cursor = 0;
 
     while (cursor < this.text.length) {
@@ -33,14 +33,27 @@ class LZ77 {
     }
   }
 
-  /**
-   * Насколько окно словаря смещено относительно начала строки
-   */
-  getWindowOffset(cursor: number): number {
-    return cursor - this.dictLength > 0 ? cursor - this.dictLength : 0;
+  public decode(): string {
+    let result = '';
+
+    this.charTable.forEach(value => {
+      let cursor = result.length - value[0]; // с какой позиции начинаем копировать
+      let length = value[1]; // количество символов для копирования
+
+      while (length > 0) {
+        result += result[cursor];
+        cursor++;
+        length--;
+      }
+      // Добавляем последний, уникальный символ
+      result += (value[2] !== null ? value[2] : '');
+    });
+
+    console.log(result, 'decoded string');
+    return result;
   }
 
-  findLongestSubstring(cursor: number, dictIdxArr: number[]) {
+  private findLongestSubstring(cursor: number, dictIdxArr: number[]) {
     const results = new Map<number, number>();
 
     for (let i = 0; i < dictIdxArr.length; i++) {
@@ -70,7 +83,7 @@ class LZ77 {
   /**
    * Находим все совпадения в charTable
    */
-  getAllCoincidenceIdxFromCharTable(cursor: number): number[] {
+  private getAllCoincidenceIdxFromCharTable(cursor: number): number[] {
     // console.log(cursor, 'cursor');
     const windowOffset = this.getWindowOffset(cursor);
     // console.log(windowOffset, 'windowOffset');
@@ -91,6 +104,13 @@ class LZ77 {
   }
 
   /**
+   * Насколько окно словаря смещено относительно начала строки
+   */
+  private getWindowOffset(cursor: number): number {
+    return cursor - this.dictLength > 0 ? cursor - this.dictLength : 0;
+  }
+
+  /**
    * Встречается ли в словаре в интервале скользящего окна искомый символ
    * @TODO оптимизировать ???, так как позже мы проходим по той же строке в getAllCoincidenceIdxFromCharTable 
    */
@@ -108,9 +128,12 @@ class LZ77 {
  */
 const algor = new LZ77('ABRAKADABRA');
 algor.encode();
+algor.decode();
 
 const algor2 = new LZ77('aacaacabcabaaac');
 algor2.encode();
+algor2.decode();
 
 const algor3 = new LZ77('КОСИЛКОСОЙКОСОЙКОСОЙ');
 algor3.encode();
+algor3.decode();
