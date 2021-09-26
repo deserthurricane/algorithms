@@ -1,4 +1,4 @@
-import { readBinaryData } from "./binaryUtils";
+import { createFileHeader, readBinaryData } from "./utils";
 import { GRANATOVYI_BRASLET } from "./texts";
 
 /**
@@ -334,7 +334,8 @@ function createCharTable(text: string): Map<string, number> {
 /*** IMAGE */
 const charTable4 = createCharTable(readBinaryData());
 console.log(charTable4, 'charTable4');
-const algo4 = new HCode(readBinaryData(), charTable4);
+createFileHeader(0, 11, charTable4);
+// const algo4 = new HCode(readBinaryData(), charTable4);
 
-algo4.encode();
-algo4.decode();
+// algo4.encode();
+// algo4.decode();
