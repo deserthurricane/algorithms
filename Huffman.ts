@@ -1,3 +1,4 @@
+import { readBinaryData } from "./binaryUtils";
 import { GRANATOVYI_BRASLET } from "./texts";
 
 /**
@@ -266,66 +267,74 @@ function createCharTable(text: string): Map<string, number> {
 
 
 /** TEST */
-const text1 = 'ABRAKADABRA';
-// A - 5
-// B - 2
-// R - 2
-// K - 1
-// D - 1
-const charTable = createCharTable(text1);
-console.log(charTable, 'charTable');
-const algo = new HCode(text1, charTable);
+// const text1 = 'ABRAKADABRA';
+// // A - 5
+// // B - 2
+// // R - 2
+// // K - 1
+// // D - 1
+// const charTable = createCharTable(text1);
+// console.log(charTable, 'charTable');
+// const algo = new HCode(text1, charTable);
 
-algo.encode();
-algo.decode();
+// algo.encode();
+// algo.decode();
 
-console.log('###################################################################################################');
+// console.log('###################################################################################################');
 
-const text2 = `
-  Мороз и солнце; день чудесный!
-  Еще ты дремлешь, друг прелестный —
-  Пора, красавица, проснись:
-  Открой сомкнуты негой взоры
-  Навстречу северной Авроры,
-  Звездою севера явись!
-  Вечор, ты помнишь, вьюга злилась,
-  На мутном небе мгла носилась;
-  Луна, как бледное пятно,
-  Сквозь тучи мрачные желтела,
-  И ты печальная сидела —
-  А нынче... погляди в окно:
-  Под голубыми небесами
-  Великолепными коврами,
-  Блестя на солнце, снег лежит;
-  Прозрачный лес один чернеет,
-  И ель сквозь иней зеленеет,
-  И речка подо льдом блестит.
-  Вся комната янтарным блеском
-  Озарена. Веселым треском
-  Трещит затопленная печь.
-  Приятно думать у лежанки.
-  Но знаешь: не велеть ли в санки
-  Кобылку бурую запречь?
-  Скользя по утреннему снегу,
-  Друг милый, предадимся бегу
-  Нетерпеливого коня
-  И навестим поля пустые,
-  Леса, недавно столь густые,
-  И берег, милый для меня.
-`;
+// const text2 = `
+//   Мороз и солнце; день чудесный!
+//   Еще ты дремлешь, друг прелестный —
+//   Пора, красавица, проснись:
+//   Открой сомкнуты негой взоры
+//   Навстречу северной Авроры,
+//   Звездою севера явись!
+//   Вечор, ты помнишь, вьюга злилась,
+//   На мутном небе мгла носилась;
+//   Луна, как бледное пятно,
+//   Сквозь тучи мрачные желтела,
+//   И ты печальная сидела —
+//   А нынче... погляди в окно:
+//   Под голубыми небесами
+//   Великолепными коврами,
+//   Блестя на солнце, снег лежит;
+//   Прозрачный лес один чернеет,
+//   И ель сквозь иней зеленеет,
+//   И речка подо льдом блестит.
+//   Вся комната янтарным блеском
+//   Озарена. Веселым треском
+//   Трещит затопленная печь.
+//   Приятно думать у лежанки.
+//   Но знаешь: не велеть ли в санки
+//   Кобылку бурую запречь?
+//   Скользя по утреннему снегу,
+//   Друг милый, предадимся бегу
+//   Нетерпеливого коня
+//   И навестим поля пустые,
+//   Леса, недавно столь густые,
+//   И берег, милый для меня.
+// `;
 
-const charTable2 = createCharTable(text2);
-console.log(charTable2, 'charTable2');
-const algo2 = new HCode(text2, charTable2);
+// const charTable2 = createCharTable(text2);
+// console.log(charTable2, 'charTable2');
+// const algo2 = new HCode(text2, charTable2);
 
-algo2.encode();
-algo2.decode();
+// algo2.encode();
+// algo2.decode();
 
 
-/*** BIG TEXT */
-const charTable3 = createCharTable(GRANATOVYI_BRASLET);
-console.log(charTable3, 'charTable3');
-const algo3 = new HCode(GRANATOVYI_BRASLET, charTable3);
+// /*** BIG TEXT */
+// const charTable3 = createCharTable(GRANATOVYI_BRASLET);
+// console.log(charTable3, 'charTable3');
+// const algo3 = new HCode(GRANATOVYI_BRASLET, charTable3);
 
-algo3.encode();
-algo3.decode();
+// algo3.encode();
+// algo3.decode();
+
+/*** IMAGE */
+const charTable4 = createCharTable(readBinaryData());
+console.log(charTable4, 'charTable4');
+const algo4 = new HCode(readBinaryData(), charTable4);
+
+algo4.encode();
+algo4.decode();
