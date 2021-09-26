@@ -1,5 +1,4 @@
-import { createFileHeader, readBinaryData } from "./utils";
-import { GRANATOVYI_BRASLET } from "./texts";
+import { createDataBuffer, createFileHeader, readBinaryData, writeBinaryData } from "./utils";
 
 /**
  * Узел в дереве Хаффмана
@@ -36,10 +35,12 @@ class HCode {
   private hTreeRoot: HNode;
   private hCode: Map<string, string> = new Map();
   private text: string;
+  private fileName: string;
 
-  constructor(text: string, charTable: Map<string, number>) {
+  constructor(fileName: string, charTable: Map<string, number>) {
     this.charTable = charTable;
-    this.text = text;
+    this.fileName = fileName;
+    this.text = readBinaryData(fileName);
   }
 
   /**
@@ -55,10 +56,22 @@ class HCode {
     // Создать "бинарную строку"
     const binaryString = this.createBinaryString();
 
-    console.log(binaryString.length / 8, 'BYTE COUNT');
-    console.log(this.text.length, 'INITIAL SYMBOLS BYTE COUNT');
-    console.log(this.text.length - (binaryString.length / 8), 'BYTE ECONOMY');
-    console.log(100 - ((binaryString.length / 8) / this.text.length) * 100, '% ECONOMY');
+    const header = createFileHeader(0, this.text.length, this.charTable)
+    const data = createDataBuffer(binaryString);
+
+    const file = new Uint8Array(header.byteLength + data.byteLength);
+    file.set(header, 0);
+    file.set(data, header.byteLength);
+
+    console.log(file.buffer, 'file');
+    
+
+    writeBinaryData(`${this.fileName}.huffman`, file);
+    
+    // console.log(binaryString.length / 8, 'BYTE COUNT');
+    // console.log(this.text.length, 'INITIAL SYMBOLS BYTE COUNT');
+    // console.log(this.text.length - (binaryString.length / 8), 'BYTE ECONOMY');
+    // console.log(100 - ((binaryString.length / 8) / this.text.length) * 100, '% ECONOMY');
     
     return binaryString;
   }
@@ -332,10 +345,10 @@ function createCharTable(text: string): Map<string, number> {
 // algo3.decode();
 
 /*** IMAGE */
-const charTable4 = createCharTable(readBinaryData());
+const charTable4 = createCharTable(readBinaryData('abra.txt'));
 console.log(charTable4, 'charTable4');
-createFileHeader(0, 11, charTable4);
-// const algo4 = new HCode(readBinaryData(), charTable4);
+// createFileHeader(0, 11, charTable4);
+const algo4 = new HCode('abra.txt', charTable4);
 
-// algo4.encode();
+algo4.encode();
 // algo4.decode();

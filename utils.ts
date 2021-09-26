@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 
-/**
- * Запись 16-битных чисел в файл BinaryData
- */
+
 // export function writeBinaryData() {
 //   const values = [];
 
@@ -25,15 +23,16 @@ import * as fs from 'fs';
 //   });
 // }
 
-export function readBinaryData(): string {
-  const buffer: Buffer = fs.readFileSync('LZ77.png');
-  const result = buffer.toString('base64');
+export function readBinaryData(fileName: string): string {
+  const buffer: Buffer = fs.readFileSync(fileName);
+  // const result = buffer.toString('base64');
+  const result = buffer.toString('utf-8');
 
   /**
    * @TODO encoding в зависимости от типа файла: utf-8 для текстов, base64 для картинок
    */
 
-  console.log(buffer.toString('base64'), 'buffer');
+  console.log(result, 'buffer');
   
 
   // offset 2 для получения 16-битных чисел, по 2 байта каждое, в бинарном строковом формате
@@ -55,8 +54,57 @@ export function readBinaryData(): string {
   return result;
 }
 
+export function writeBinaryData(fileName: string, data: Uint8Array) {
+  const wstream = fs.createWriteStream(fileName);
+  wstream.write(data);
+  wstream.end();
+}
+
 // writeBinaryData() 
 // readBinaryData()
+
+export function createDataBuffer(data: string): Uint8Array {
+  const byteDataArray = new Uint8Array(Math.ceil(data.length / 8));
+  let byteIndex = 0;
+
+  for (let i = 0; i < data.length; i += 8) {
+    // Записываем байты слева направо
+    let rightToLeftBytes = '';
+    let undefinedCount = 0; // сколько бит не хватило до полного байта
+
+    for (let j = i + 7; j >= i; j--) {
+      if (data[j] !== undefined) {
+        rightToLeftBytes += data[j] // || '0';
+      } else {
+        undefinedCount++;
+      }
+    }
+    // for (let j = i; j < i + 8; j++) {
+    //   if (data[j] !== undefined) {
+    //     rightToLeftBytes += data[j];
+    //   } else {
+    //     undefinedCount++;
+    //   }
+    // }
+    
+    // if (undefinedCount > 0) {
+    //   const zeroTail = '0'.repeat(undefinedCount);
+    //   rightToLeftBytes += zeroTail;
+    // }
+
+    console.log(rightToLeftBytes, 'rightToLeftBytes');
+    
+
+    // bits.push(parseInt(rightToLeftBytes, 2));
+    byteDataArray[byteIndex] = parseInt(rightToLeftBytes, 2);
+    byteIndex++;
+  }
+
+  console.log(byteDataArray, 'byteDataArray');
+
+  return byteDataArray;
+  
+}
 
 /**
  * 
@@ -81,7 +129,7 @@ export function createFileHeader(algoType:  0 | 1, dataLength: number, charTable
     + 1 // количество символов в таблице кодов занимает 1 байт (максимум может использоваться 256 символов)
     + charTableByteSize // пары "код символа" (1 байт) - "количество повторов" (4 байта)
   ;
-  
+
   const header = new Uint8Array(bufferLength);
   
   header[0] = algoType;
