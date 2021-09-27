@@ -23,16 +23,16 @@ import * as fs from 'fs';
 //   });
 // }
 
-export function readBinaryData(fileName: string): string {
-  const buffer: Buffer = fs.readFileSync(fileName);
+export function readBinaryData(fileName: string): Buffer {
+  const data: Buffer = fs.readFileSync(fileName);
   // const result = buffer.toString('base64');
-  const result = buffer.toString('utf-8');
+  // const result = buffer.toString('utf-8');
 
-  /**
-   * @TODO encoding в зависимости от типа файла: utf-8 для текстов, base64 для картинок
-   */
+  // /**
+  //  * @TODO encoding в зависимости от типа файла: utf-8 для текстов, base64 для картинок
+  //  */
 
-  console.log(result, 'buffer');
+  // console.log(result, 'buffer');
   
 
   // offset 2 для получения 16-битных чисел, по 2 байта каждое, в бинарном строковом формате
@@ -51,7 +51,7 @@ export function readBinaryData(fileName: string): string {
   // console.log(binaryStrings, 'binaryStrings');
   // console.log(binaryStrings.length, 'binaryStrings.length');
   
-  return result;
+  return data;
 }
 
 export function writeBinaryData(fileName: string, data: Uint8Array) {
@@ -177,3 +177,68 @@ function createCharTableBuffer(charTable: Map<string, number>, charTableByteSize
 
   return number4Bytes;
 };
+
+export function decodeFileHeader(buffer: ArrayBuffer) {
+  const dataView = new Uint8Array(buffer);
+
+  const algoType: 0 | 1 = dataView[0] as 0 | 1;
+  const dataLength: number = getNumberFrom32Bit(dataView, 1);
+  // console.log(dataLength, 'dataLength 1');
+  const charTableLength: number = dataView[5];
+  const charTable: Map<string, number> = new Map();
+  const startCharTableIndex = 6;
+
+  // console.log(algoType, 'algoType');
+  // console.log(dataLength, 'dataLength');
+  // console.log(charTableLength, 'charTableLength');
+
+  let byteIndex = startCharTableIndex;
+  const end = startCharTableIndex + charTableLength * 1 + charTableLength * 4;
+
+  while (byteIndex < end) {
+    charTable.set(
+      String.fromCharCode(dataView[byteIndex]),
+      getNumberFrom32Bit(dataView, byteIndex + 1)
+    );
+
+    byteIndex += 5;
+  }
+
+  console.log(charTable, 'charTable');
+
+  return {
+    algoType,
+    dataLength,
+    charTable,
+    startIndex: end
+  };
+}
+
+function getNumberFrom32Bit(buffer: ArrayBuffer, startIndex: number): number {
+  let i = startIndex;
+
+  // console.log(buffer[1] | (buffer[2] << 8), 'buffer[1] or 2');
+  // console.log(buffer[2], 'buffer[2]');
+  // console.log(buffer[3], 'buffer[3]');
+  
+
+  return buffer[i] 
+    | (buffer[i+1] << 8)
+    | (buffer[i+2] << 16)
+    | (buffer[i+3] << 24);
+}
+
+export function get8BitInt(num: number) {
+  console.log(num, 'num');
+  
+  let binaryNum = num.toString(2).split('').reverse().join('');
+
+  console.log(binaryNum.length, 'binaryNum');
+
+  if (binaryNum.length < 8) {
+    binaryNum += '0'.repeat(8 - binaryNum.length)
+    // .repeat(8 - binaryNum.length) + binaryNum;
+  }
+
+  return binaryNum;
+}

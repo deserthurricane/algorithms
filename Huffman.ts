@@ -1,4 +1,4 @@
-import { createDataBuffer, createFileHeader, readBinaryData, writeBinaryData } from "./utils";
+import { createDataBuffer, createFileHeader, decodeFileHeader, get8BitInt, readBinaryData, writeBinaryData } from "./utils";
 
 /**
  * Узел в дереве Хаффмана
@@ -40,7 +40,7 @@ class HCode {
   constructor(fileName: string, charTable: Map<string, number>) {
     this.charTable = charTable;
     this.fileName = fileName;
-    this.text = readBinaryData(fileName);
+    this.text = readBinaryData(fileName).toString('utf-8');
   }
 
   /**
@@ -64,7 +64,7 @@ class HCode {
     file.set(data, header.byteLength);
 
     console.log(file.buffer, 'file');
-    
+    // console.log(decodeFileHeader(file.buffer));    
 
     writeBinaryData(`${this.fileName}.huffman`, file);
     
@@ -79,20 +79,52 @@ class HCode {
   /**
    * Декодирование из бинарной строки в обычный текст
    */
-  public decode() {
+  public decode(fileName: string) {
     // Для простоты тестирования декодируем то же сообщение, что мы кодировали
-    let encodedText = this.encode();
+    // let encodedText = this.encode();
+    const encodedData: Buffer = readBinaryData(fileName);
+
+    // console.log(encodedData.byteLength, 'bytelength');
+    // decodeFileHeader(encodedData);
+
+    const { dataLength, charTable, startIndex } = decodeFileHeader(encodedData);
+
+    // console.log(charTable, 'dataLength, startIndex');
+    
+    this.charTable = charTable;
+
+    console.log(this.charTable, 'this.charTable');
+    
+
+    let encodedText = readBinaryData(fileName).slice(startIndex).toString('utf-8').split('').map(char => get8BitInt(char.charCodeAt(0))).join('');
+    console.log(encodedText, 'encodedText');
+    console.log('v'.charCodeAt(0).toString(10));
+    console.log('Q'.charCodeAt(0).toString(10));
+    console.log(';'.charCodeAt(0).toString(10));
+    
+    console.log('v'.charCodeAt(0).toString(2));
     let decodedText = '';
 
-    const hCodeEntries = Array.from(this.hCode.entries());
+    // Создать дерево
+    this.createHTree();
 
-    while (encodedText.length > 0) {
+    // Пройтись по дереву и создать код Хаффмана
+    this.createHCode();
+
+    const hCodeEntries = Array.from(this.hCode.entries());
+    console.log(hCodeEntries, 'hCodeEntries');
+    
+
+    let i = dataLength;
+
+    while (i > 0) {
       const [char, code] = this.findPrefix(encodedText, hCodeEntries);
       decodedText += char;
       encodedText = encodedText.slice(code.length);
+      i--;
     }
 
-    // console.log(decodedText, 'decodedText');
+    console.log(decodedText, 'decodedText');
     
     return decodedText;
   }
@@ -345,10 +377,10 @@ function createCharTable(text: string): Map<string, number> {
 // algo3.decode();
 
 /*** IMAGE */
-const charTable4 = createCharTable(readBinaryData('abra.txt'));
+const charTable4 = createCharTable(readBinaryData('abra.txt').toString('utf-8'));
 console.log(charTable4, 'charTable4');
 // createFileHeader(0, 11, charTable4);
 const algo4 = new HCode('abra.txt', charTable4);
 
-algo4.encode();
-// algo4.decode();
+// algo4.encode();
+algo4.decode('abra.txt.huffman');
