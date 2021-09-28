@@ -40,7 +40,7 @@ class HCode {
   constructor(fileName: string, charTable: Map<string, number>) {
     this.charTable = charTable;
     this.fileName = fileName;
-    this.text = readBinaryData(fileName).toString('utf-8');
+    this.text = readBinaryData(fileName).toString('utf8');
   }
 
   /**
@@ -89,20 +89,19 @@ class HCode {
 
     const { dataLength, charTable, startIndex } = decodeFileHeader(encodedData);
 
-    // console.log(charTable, 'dataLength, startIndex');
-    
     this.charTable = charTable;
 
     console.log(this.charTable, 'this.charTable');
-    
 
-    let encodedText = readBinaryData(fileName).slice(startIndex).toString('utf-8').split('').map(char => get8BitInt(char.charCodeAt(0))).join('');
-    console.log(encodedText, 'encodedText');
-    console.log('v'.charCodeAt(0).toString(10));
-    console.log('Q'.charCodeAt(0).toString(10));
-    console.log(';'.charCodeAt(0).toString(10));
-    
-    console.log('v'.charCodeAt(0).toString(2));
+    const fileData = encodedData.slice(startIndex);
+
+    let binaryText = '';
+
+    for (let i = 0; i < fileData.byteLength; i++) {
+      // console.log(fileData[i], 'fileData[i]');
+      binaryText += get8BitInt(fileData[i]);
+    }    
+
     let decodedText = '';
 
     // Создать дерево
@@ -112,15 +111,14 @@ class HCode {
     this.createHCode();
 
     const hCodeEntries = Array.from(this.hCode.entries());
-    console.log(hCodeEntries, 'hCodeEntries');
-    
+    console.log(hCodeEntries, 'hCodeEntries');    
 
     let i = dataLength;
 
     while (i > 0) {
-      const [char, code] = this.findPrefix(encodedText, hCodeEntries);
+      const [char, code] = this.findPrefix(binaryText, hCodeEntries);
       decodedText += char;
-      encodedText = encodedText.slice(code.length);
+      binaryText = binaryText.slice(code.length);
       i--;
     }
 
@@ -312,75 +310,20 @@ function createCharTable(text: string): Map<string, number> {
 
 
 /** TEST */
-// const text1 = 'ABRAKADABRA';
-// // A - 5
-// // B - 2
-// // R - 2
-// // K - 1
-// // D - 1
-// const charTable = createCharTable(text1);
-// console.log(charTable, 'charTable');
-// const algo = new HCode(text1, charTable);
-
-// algo.encode();
-// algo.decode();
-
-// console.log('###################################################################################################');
-
-// const text2 = `
-//   Мороз и солнце; день чудесный!
-//   Еще ты дремлешь, друг прелестный —
-//   Пора, красавица, проснись:
-//   Открой сомкнуты негой взоры
-//   Навстречу северной Авроры,
-//   Звездою севера явись!
-//   Вечор, ты помнишь, вьюга злилась,
-//   На мутном небе мгла носилась;
-//   Луна, как бледное пятно,
-//   Сквозь тучи мрачные желтела,
-//   И ты печальная сидела —
-//   А нынче... погляди в окно:
-//   Под голубыми небесами
-//   Великолепными коврами,
-//   Блестя на солнце, снег лежит;
-//   Прозрачный лес один чернеет,
-//   И ель сквозь иней зеленеет,
-//   И речка подо льдом блестит.
-//   Вся комната янтарным блеском
-//   Озарена. Веселым треском
-//   Трещит затопленная печь.
-//   Приятно думать у лежанки.
-//   Но знаешь: не велеть ли в санки
-//   Кобылку бурую запречь?
-//   Скользя по утреннему снегу,
-//   Друг милый, предадимся бегу
-//   Нетерпеливого коня
-//   И навестим поля пустые,
-//   Леса, недавно столь густые,
-//   И берег, милый для меня.
-// `;
-
-// const charTable2 = createCharTable(text2);
-// console.log(charTable2, 'charTable2');
-// const algo2 = new HCode(text2, charTable2);
-
-// algo2.encode();
-// algo2.decode();
-
 
 // /*** BIG TEXT */
-// const charTable3 = createCharTable(GRANATOVYI_BRASLET);
-// console.log(charTable3, 'charTable3');
-// const algo3 = new HCode(GRANATOVYI_BRASLET, charTable3);
+const charTable3 = createCharTable(readBinaryData('abra.txt').toString('utf8'));
+console.log(charTable3, 'charTable3');
+const algo3 = new HCode('abra.txt', charTable3);
 
 // algo3.encode();
-// algo3.decode();
+algo3.decode('abra.txt.huffman');
 
 /*** IMAGE */
-const charTable4 = createCharTable(readBinaryData('abra.txt').toString('utf-8'));
-console.log(charTable4, 'charTable4');
-// createFileHeader(0, 11, charTable4);
-const algo4 = new HCode('abra.txt', charTable4);
+// const charTable4 = createCharTable(readBinaryData('text.txt').toString('utf8'));
+// console.log(charTable4, 'charTable4');
+// // createFileHeader(0, 11, charTable4);
+// const algo4 = new HCode('text.txt', charTable4);
 
-// algo4.encode();
-algo4.decode('abra.txt.huffman');
+// // algo4.encode();
+// algo4.decode('text.txt.huffman');

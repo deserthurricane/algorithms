@@ -1,28 +1,5 @@
 import * as fs from 'fs';
 
-
-// export function writeBinaryData() {
-//   const values = [];
-
-//   for (let i = 0; i < 1e7; i++) {
-//     values[i] = generate16bitNumber();
-//   }
-
-//   // console.log(values, 'values');
-
-//   const wstream = fs.createWriteStream('BinaryData');
-//   const int16Binary = Buffer.from(Int16Array.from(values).buffer);
-//   // console.log(int16Binary, 'int16Binary');
-
-//   wstream.write(int16Binary);
-//   wstream.end();
-
-//   wstream.on('finish', function() {
-//     console.log('file has been written');
-//     readBinaryData()
-//   });
-// }
-
 export function readBinaryData(fileName: string): Buffer {
   const data: Buffer = fs.readFileSync(fileName);
   // const result = buffer.toString('base64');
@@ -60,8 +37,7 @@ export function writeBinaryData(fileName: string, data: Uint8Array) {
   wstream.end();
 }
 
-// writeBinaryData() 
-// readBinaryData()
+
 
 export function createDataBuffer(data: string): Uint8Array {
   const byteDataArray = new Uint8Array(Math.ceil(data.length / 8));
@@ -79,23 +55,7 @@ export function createDataBuffer(data: string): Uint8Array {
         undefinedCount++;
       }
     }
-    // for (let j = i; j < i + 8; j++) {
-    //   if (data[j] !== undefined) {
-    //     rightToLeftBytes += data[j];
-    //   } else {
-    //     undefinedCount++;
-    //   }
-    // }
-    
-    // if (undefinedCount > 0) {
-    //   const zeroTail = '0'.repeat(undefinedCount);
-    //   rightToLeftBytes += zeroTail;
-    // }
 
-    console.log(rightToLeftBytes, 'rightToLeftBytes');
-    
-
-    // bits.push(parseInt(rightToLeftBytes, 2));
     byteDataArray[byteIndex] = parseInt(rightToLeftBytes, 2);
     byteIndex++;
   }
@@ -142,7 +102,7 @@ export function createFileHeader(algoType:  0 | 1, dataLength: number, charTable
   const charTableBuffer = createCharTableBuffer(charTable, charTableByteSize);
   header.set(charTableBuffer, 6);
 
-  console.log(header.buffer, 'header');
+  // console.log(header.buffer, 'header');
 
   return header;
 }
@@ -183,14 +143,10 @@ export function decodeFileHeader(buffer: ArrayBuffer) {
 
   const algoType: 0 | 1 = dataView[0] as 0 | 1;
   const dataLength: number = getNumberFrom32Bit(dataView, 1);
-  // console.log(dataLength, 'dataLength 1');
+
   const charTableLength: number = dataView[5];
   const charTable: Map<string, number> = new Map();
   const startCharTableIndex = 6;
-
-  // console.log(algoType, 'algoType');
-  // console.log(dataLength, 'dataLength');
-  // console.log(charTableLength, 'charTableLength');
 
   let byteIndex = startCharTableIndex;
   const end = startCharTableIndex + charTableLength * 1 + charTableLength * 4;
@@ -217,11 +173,6 @@ export function decodeFileHeader(buffer: ArrayBuffer) {
 function getNumberFrom32Bit(buffer: ArrayBuffer, startIndex: number): number {
   let i = startIndex;
 
-  // console.log(buffer[1] | (buffer[2] << 8), 'buffer[1] or 2');
-  // console.log(buffer[2], 'buffer[2]');
-  // console.log(buffer[3], 'buffer[3]');
-  
-
   return buffer[i] 
     | (buffer[i+1] << 8)
     | (buffer[i+2] << 16)
@@ -229,15 +180,10 @@ function getNumberFrom32Bit(buffer: ArrayBuffer, startIndex: number): number {
 }
 
 export function get8BitInt(num: number) {
-  console.log(num, 'num');
-  
   let binaryNum = num.toString(2).split('').reverse().join('');
-
-  console.log(binaryNum.length, 'binaryNum');
 
   if (binaryNum.length < 8) {
     binaryNum += '0'.repeat(8 - binaryNum.length)
-    // .repeat(8 - binaryNum.length) + binaryNum;
   }
 
   return binaryNum;
