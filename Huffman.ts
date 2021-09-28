@@ -40,7 +40,7 @@ class HCode {
   constructor(fileName: string, charTable: Map<string, number>) {
     this.charTable = charTable;
     this.fileName = fileName;
-    this.text = readBinaryData(fileName).toString('utf8');
+    this.text = readBinaryData(fileName).toString('base64');
   }
 
   /**
@@ -123,6 +123,8 @@ class HCode {
     }
 
     console.log(decodedText, 'decodedText');
+
+    writeBinaryData(`${this.fileName}.huffman.decoded`, Buffer.from(decodedText, 'base64'));
     
     return decodedText;
   }
@@ -312,18 +314,18 @@ function createCharTable(text: string): Map<string, number> {
 /** TEST */
 
 // /*** BIG TEXT */
-const charTable3 = createCharTable(readBinaryData('abra.txt').toString('utf8'));
-console.log(charTable3, 'charTable3');
-const algo3 = new HCode('abra.txt', charTable3);
+// const charTable3 = createCharTable(readBinaryData('abra.txt').toString('base64'));
+// console.log(charTable3, 'charTable3');
+// const algo3 = new HCode('abra.txt', charTable3);
 
-// algo3.encode();
-algo3.decode('abra.txt.huffman');
+// // algo3.encode();
+// algo3.decode('abra.txt.huffman');
 
 /*** IMAGE */
-// const charTable4 = createCharTable(readBinaryData('text.txt').toString('utf8'));
-// console.log(charTable4, 'charTable4');
-// // createFileHeader(0, 11, charTable4);
-// const algo4 = new HCode('text.txt', charTable4);
+const charTable4 = createCharTable(readBinaryData('img.png').toString('base64'));
+console.log(charTable4, 'charTable4');
+// createFileHeader(0, 11, charTable4);
+const algo4 = new HCode('img.png', charTable4);
 
-// // algo4.encode();
-// algo4.decode('text.txt.huffman');
+// algo4.encode();
+algo4.decode('img.png.huffman');
