@@ -128,7 +128,7 @@ function createCharTableBuffer(charTable: Map<string, number>, charTableByteSize
  * @param num 
  * @returns 
  */
- function create4ByteNumber(num: number): Uint8Array {
+export function create4ByteNumber(num: number): Uint8Array {
   const number4Bytes = new Uint8Array(4);
   number4Bytes[0] = num & 255;
   number4Bytes[1] = (num >> 8) & 255;
@@ -136,6 +136,14 @@ function createCharTableBuffer(charTable: Map<string, number>, charTableByteSize
   number4Bytes[3] = (num >> 24) & 255;
 
   return number4Bytes;
+};
+
+export function create2ByteNumber(num: number): Uint8Array {
+  const number2Bytes = new Uint8Array(2);
+  number2Bytes[0] = num & 255;
+  number2Bytes[1] = (num >> 8) & 255;
+
+  return number2Bytes;
 };
 
 export function decodeFileHeader(buffer: ArrayBuffer) {
@@ -170,13 +178,20 @@ export function decodeFileHeader(buffer: ArrayBuffer) {
   };
 }
 
-function getNumberFrom32Bit(buffer: ArrayBuffer, startIndex: number): number {
+export function getNumberFrom32Bit(buffer: ArrayBuffer, startIndex: number): number {
   let i = startIndex;
 
   return buffer[i] 
     | (buffer[i+1] << 8)
     | (buffer[i+2] << 16)
     | (buffer[i+3] << 24);
+}
+
+export function getNumberFrom16Bit(buffer: ArrayBuffer, startIndex: number): number {
+  let i = startIndex;
+
+  return buffer[i] 
+    | (buffer[i+1] << 8);
 }
 
 export function get8BitInt(num: number) {

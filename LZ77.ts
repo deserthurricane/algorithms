@@ -1,7 +1,6 @@
 // Алгоритм Lempel-Ziv 1977 - динамическое накопление словаря при сжатии данных
 
-import { readBinaryData } from "./binaryUtils";
-import { GRANATOVYI_BRASLET } from "./texts";
+import { create2ByteNumber, create4ByteNumber, getNumberFrom16Bit, getNumberFrom32Bit, readBinaryData, writeBinaryData } from "./utils";
 
 type CharTableValue = [number, number, string | null];
 
@@ -9,11 +8,13 @@ class LZ77 {
   text: string;
   charTable: Array<CharTableValue> = [];
   bufferLength = 1000;
-  dictLength = 32000; // вопрос! как правильно выбрать размер?
+  dictLength = 1000; // вопрос! как правильно выбрать размер?
+  private fileName: string;
 
-  constructor(text: string) {
-    this.text = text;
-    console.log(this.text.length, 'this.text.length');
+  constructor(fileName: string) {
+    this.fileName = fileName;
+    this.text = readBinaryData(fileName).toString('base64');
+    // console.log(this.text, 'this.text');
   }
 
   public encode() {
@@ -41,14 +42,82 @@ class LZ77 {
       // console.log(this.charTable);
     }
 
-    // console.log(this.charTable);
-    console.log(this.charTable.length * 3, 'this.charTable.length');
+    const data = this.createBinaryData();
+
+    // console.log(data, 'data');
+    
+    writeBinaryData(`${this.fileName}.lz`, data);
   }
 
-  public decode(): string {
+  createBinaryData() {
+    const algoTypeLength = 1; // 1 байт - 0 или 1
+    const initialDataLength = 4; // количество символов в исходных данных занимает 4 байта
+
+    const positionByteSize = 2;  // позиция начала повтора займет 2 байта
+    const lengthByteSize = 1;  // число повтора символа может занять до 3 байт, так как могут быть большие числа
+    const charByteSize = 1; // буква займет 1 байт
+    const charTableByteSize = 
+      this.charTable.length * positionByteSize 
+      + this.charTable.length * lengthByteSize
+      + this.charTable.length * charByteSize;
+
+    const bufferLength = algoTypeLength + initialDataLength + charTableByteSize;
+
+    const binaryData = new Uint8Array(bufferLength);
+    binaryData[0] = 1; // тип алгоритма
+
+    const dataLengthBytes = create4ByteNumber(this.charTable.length);
+    binaryData.set(dataLengthBytes, 1);
+    
+
+    const charTableBuffer = this.createCharTableBuffer(charTableByteSize);
+    binaryData.set(charTableBuffer, 5);
+
+    return binaryData;
+  }
+
+  createCharTableBuffer(charTableByteSize: number): Uint8Array {
+    const charTableData = new Uint8Array(charTableByteSize);
+    let i = 0;
+  
+    for (let [position, length, char] of this.charTable) {
+      if (i === charTableByteSize) break;
+  
+      charTableData.set(create2ByteNumber(position), i);
+      charTableData[i+2] = length;
+      charTableData[i+3] = char !== null ? char.charCodeAt(0) : 0;
+  
+      i += 4;
+    }
+
+    console.log(charTableData, 'charTableData');
+
+    return charTableData;
+  }
+
+  public decode(fileName: string): string {
+    const encodedData: Buffer = readBinaryData(fileName);
+
+    const dataView = new Uint8Array(encodedData);
+
+    const algoType: 0 | 1 = dataView[0] as 0 | 1;
+    const dataLength: number = getNumberFrom32Bit(dataView, 1);
+    console.log(dataLength, 'dataLength');
+    
+
+    const charTable = [];
+
+    for (let i = 5; i < encodedData.byteLength; i += 4) {
+      const position = encodedData.slice(i, i + 2).readInt16LE();
+      const length = encodedData[i+2];
+      const char = encodedData[i+3] !== 0 ? String.fromCharCode(encodedData[i+3]) : null;
+
+      charTable.push([position, length, char]);
+    }
+
     let result = '';
 
-    this.charTable.forEach(value => {
+    charTable.forEach(value => {
       let cursor = result.length - value[0]; // с какой позиции начинаем копировать
       let length = value[1]; // количество символов для копирования
 
@@ -61,7 +130,9 @@ class LZ77 {
       result += (value[2] !== null ? value[2] : '');
     });
 
-    console.log(result, 'decoded string');
+    // console.log(result, 'decoded string');
+
+    writeBinaryData(`${this.fileName}.lz.decoded`, Buffer.from(result, 'base64'))
     return result;
   }
 
@@ -154,6 +225,10 @@ class LZ77 {
 // algor4.encode();
 // algor4.decode();
 
-const algor5 = new LZ77(readBinaryData());
-algor5.encode();
-algor5.decode();
+// const algor5 = new LZ77('latin.txt');
+// // algor5.encode();
+// algor5.decode('latin.txt.lz');
+
+const algor6 = new LZ77('LZ77.png');
+algor6.encode();
+// algor6.decode('LZ77.png.lz');
