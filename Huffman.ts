@@ -1,4 +1,4 @@
-import { createDataBuffer, createFileHeader, decodeFileHeader, get8BitInt, readBinaryData, writeBinaryData } from "./utils";
+import { create4ByteNumber, get8BitInt, getNumberFrom4Byte, readBinaryData, writeBinaryData } from "./utils";
 
 /**
  * Узел в дереве Хаффмана
@@ -30,24 +30,43 @@ class HNode {
 /**
  * Код Хаффмана - алгоритм сжатия любых данных
  */
-class HCode {
-  private charTable: Map<string, number>;
+export class HCode {
+  private charTable: Map<string, number> = new Map();
   private hTreeRoot: HNode;
   private hCode: Map<string, string> = new Map();
   private text: string;
   private fileName: string;
 
-  constructor(fileName: string, charTable: Map<string, number>) {
-    this.charTable = charTable;
+  constructor(fileName: string, encoding?: BufferEncoding) {
     this.fileName = fileName;
-    this.text = readBinaryData(fileName).toString('base64');
+
+    if (encoding) {
+      this.text = readBinaryData(fileName).toString(encoding);
+    }
   }
 
   /**
-   * Кодирование символов текста в "бинарную строку"
+   * Создание таблицы частотности употребления символов
    */
-  public encode(): string {
-    // Создать дерево
+  private createCharTable() {
+    this.text.split('').forEach(char => {
+      if (!this.charTable.has(char)) {
+        this.charTable.set(char, 1);
+      } else {
+        const count = this.charTable.get(char);
+        this.charTable.set(char, count + 1);
+      }
+    });
+  }
+
+  /**
+   * Сжатие файла с помощью кода Хаффмана
+   */
+  public encode(): Uint8Array {
+    // Создать таблицу частотности
+    this.createCharTable();
+
+    // Создать бинарное дерево
     this.createHTree();
 
     // Пройтись по дереву и создать код Хаффмана
@@ -56,51 +75,114 @@ class HCode {
     // Создать "бинарную строку"
     const binaryString = this.createBinaryString();
 
-    const header = createFileHeader(0, this.text.length, this.charTable)
-    const data = createDataBuffer(binaryString);
+    const header = this.createFileHeader(0, this.text.length, this.charTable)
+    const data = this.createDataBuffer(binaryString);
 
     const file = new Uint8Array(header.byteLength + data.byteLength);
     file.set(header, 0);
     file.set(data, header.byteLength);
 
-    console.log(file.buffer, 'file');
-    // console.log(decodeFileHeader(file.buffer));    
+    return file;
+  }
 
-    writeBinaryData(`${this.fileName}.huffman`, file);
-    
-    // console.log(binaryString.length / 8, 'BYTE COUNT');
-    // console.log(this.text.length, 'INITIAL SYMBOLS BYTE COUNT');
-    // console.log(this.text.length - (binaryString.length / 8), 'BYTE ECONOMY');
-    // console.log(100 - ((binaryString.length / 8) / this.text.length) * 100, '% ECONOMY');
-    
-    return binaryString;
+  /**
+  * Создание хэдера
+  * @param algoType - выбранный алгоритм сжатия: 0 - код Хаффмана, 1 - LZ77
+  * @param dataLength - длина исходных данных в байтах
+  * @param charTable - таблица кодирования
+  * @returns Uint8Array
+  */
+  private createFileHeader(algoType: 0 | 1, dataLength: number, charTable: Map<string, number>): Uint8Array {
+    /* Любое по величине число, обозначающее количество байт исходного файла, необходимо разместить в массиве из 4 байт 
+     * Это нужно для того, чтобы и маленькие числа, и числа до 2 ^ 30 (2Гб) занимали одинаковое количество байт 
+     */
+    const charCodeUtfByteSize = 1;  // код символа по utf-8 займет 1 байт
+    const charCountUtfByteSize = 4;  // число повтора символа может занять до 3 байт, так как могут быть большие числа
+    const charTableByteSize = charTable.size * charCodeUtfByteSize + charTable.size * charCountUtfByteSize;
+
+    console.log(charTableByteSize, 'charTableByteSize');
+
+    const bufferLength =
+      1 // тип алгоритма занимает 1 байт (хранит 0 или 1)
+      + 4 // количество символов в исходных данных занимает 4 байта
+      + 1 // количество символов в таблице кодов занимает 1 байт (максимум может использоваться 256 символов)
+      + charTableByteSize // пары "код символа" (1 байт) - "количество повторов" (4 байта)
+      ;
+
+    const header = new Uint8Array(bufferLength);
+
+    header[0] = algoType;
+
+    const dataLengthBytes = create4ByteNumber(dataLength);
+    header.set(dataLengthBytes, 1);
+
+    header[5] = charTable.size;
+
+    const charTableBuffer = this.createCharTableBuffer(charTable, charTableByteSize);
+    header.set(charTableBuffer, 6);
+
+    return header;
+  }
+
+  /**
+  * Кодирование символов в файле по Коду Хаффмана
+  */
+  private createDataBuffer(data: string): Uint8Array {
+    const byteDataArray = new Uint8Array(Math.ceil(data.length / 8));
+    let byteIndex = 0;
+
+    for (let i = 0; i < data.length; i += 8) {
+      // Записываем байты справа налево
+      let rightToLeftBytes = '';
+
+      for (let j = i + 7; j >= i; j--) {
+        if (data[j] !== undefined) {
+          rightToLeftBytes += data[j]
+        }
+      }
+
+      byteDataArray[byteIndex] = parseInt(rightToLeftBytes, 2);
+      byteIndex++;
+    }
+
+    return byteDataArray;
+  }
+
+  /**
+   * Кодирование Кода Хаффмана
+   */
+  private createCharTableBuffer(charTable: Map<string, number>, charTableByteSize: number): Uint8Array {
+    const hCodeArray = new Uint8Array(charTableByteSize);
+    let i = 0;
+
+    for (let [char, count] of charTable) {
+      if (i === charTableByteSize) break;
+
+      hCodeArray[i] = char.charCodeAt(0);
+      hCodeArray.set(create4ByteNumber(count), ++i);
+
+      i += 4;
+    }
+
+    return hCodeArray;
   }
 
   /**
    * Декодирование из бинарной строки в обычный текст
    */
-  public decode(fileName: string) {
-    // Для простоты тестирования декодируем то же сообщение, что мы кодировали
-    // let encodedText = this.encode();
-    const encodedData: Buffer = readBinaryData(fileName);
+  public decode(): string {
+    const encodedData: Buffer = readBinaryData(this.fileName);
 
-    // console.log(encodedData.byteLength, 'bytelength');
-    // decodeFileHeader(encodedData);
-
-    const { dataLength, charTable, startIndex } = decodeFileHeader(encodedData);
+    const { dataLength, charTable, startIndex } = this.decodeFileHeader(encodedData);
 
     this.charTable = charTable;
 
-    console.log(this.charTable, 'this.charTable');
-
+    // Раскодируем текст по Коду Хаффмана this.charTable
     const fileData = encodedData.slice(startIndex);
-
     let binaryText = '';
-
     for (let i = 0; i < fileData.byteLength; i++) {
-      // console.log(fileData[i], 'fileData[i]');
       binaryText += get8BitInt(fileData[i]);
-    }    
+    }
 
     let decodedText = '';
 
@@ -111,7 +193,6 @@ class HCode {
     this.createHCode();
 
     const hCodeEntries = Array.from(this.hCode.entries());
-    console.log(hCodeEntries, 'hCodeEntries');    
 
     let i = dataLength;
 
@@ -122,17 +203,47 @@ class HCode {
       i--;
     }
 
-    console.log(decodedText, 'decodedText');
-
-    writeBinaryData(`${this.fileName}.huffman.decoded`, Buffer.from(decodedText, 'base64'));
-    
+    // writeBinaryData(`${this.fileName}.huffman.decoded`, Buffer.from(decodedText, 'base64'));
+    // Buffer.from(decodedText)
     return decodedText;
+  }
+
+  private decodeFileHeader(buffer: ArrayBuffer) {
+    const dataView = new Uint8Array(buffer);
+
+    const algoType: 0 | 1 = dataView[0] as 0 | 1;
+    const dataLength: number = getNumberFrom4Byte(dataView, 1);
+
+    const charTableLength: number = dataView[5];
+    const charTable: Map<string, number> = new Map();
+    const startCharTableIndex = 6;
+
+    let byteIndex = startCharTableIndex;
+    const end = startCharTableIndex + charTableLength * 1 + charTableLength * 4;
+
+    while (byteIndex < end) {
+      charTable.set(
+        String.fromCharCode(dataView[byteIndex]),
+        getNumberFrom4Byte(dataView, byteIndex + 1)
+      );
+
+      byteIndex += 5;
+    }
+
+    console.log(charTable, 'charTable');
+
+    return {
+      algoType,
+      dataLength,
+      charTable,
+      startIndex: end
+    };
   }
 
   /**
    * Поиск префикса из кода Хаффмана в "бинарной строке"
    */
-  private findPrefix(encodedText: string, hCodeEntries: Array<[string, string]>): [string, string] {    
+  private findPrefix(encodedText: string, hCodeEntries: Array<[string, string]>): [string, string] {
     return hCodeEntries.find(([key, value]) => encodedText.startsWith(value));
   }
 
@@ -151,20 +262,19 @@ class HCode {
    */
   private createHCode(): void {
     const charCodesUTF: string[] = Array.from(this.charTable.keys());
-    
+
     for (let charCodeUTF of charCodesUTF) {
       const result = this.createBinaryCharCode(charCodeUTF);
       this.hCode.set(charCodeUTF, result);
     }
-
-    console.log(this.hCode, 'this.hCode');
+    // console.log(this.hCode, 'this.hCode');
   }
 
   /**
    * Построение кода Хаффмана для одного символа
    */
   private createBinaryCharCode(charCodeUTF: string): string {
-    let indexes: Array<0|1> = [];
+    let indexes: Array<0 | 1> = [];
     const found = {
       isFound: false
     };
@@ -181,9 +291,9 @@ class HCode {
   /**
    * Рекурсивная реализация глубокого поиска для 1 узла
    */
-  private deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0|1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0|1>) {
+  private deepNodeSearch(node: HNode, charCodeUTF: string, nodeIndex: 0 | 1, visited: WeakMap<HNode, boolean>, found: { isFound: boolean }, indexes: Array<0 | 1>) {
     if (found.isFound) return;
-    
+
     const subNodes = node.getSubNodes();
 
     if (subNodes === null) {
@@ -191,7 +301,7 @@ class HCode {
         found.isFound = true;
         visited.set(node, true);
         indexes.unshift(nodeIndex);
-      } 
+      }
       return;
     } else {
       this.deepNodeSearch(subNodes[0], charCodeUTF, 0, visited, found, indexes);
@@ -209,17 +319,17 @@ class HCode {
    */
   private createHTree(): void {
     const sortedChars: Array<[string, number]> = this.sortCharTable();
-    
+
     const hNodes: HNode[] = [];
 
-    while (sortedChars.length > 1 || hNodes.length > 1) {      
+    while (sortedChars.length > 1 || hNodes.length > 1) {
       // Достаём последний и предпоследний по значению count элементы      
       const hNode1 = this.getMinEl(sortedChars, hNodes);
       const hNode2 = this.getMinEl(sortedChars, hNodes);
 
       // Создаём новый узел дерева Хаффмана
       const sumCount = hNode1.getWeight() + hNode2.getWeight();
-      const hTreeNode = new HNode(null, sumCount, [hNode1, hNode2]);      
+      const hTreeNode = new HNode(null, sumCount, [hNode1, hNode2]);
 
       // Кладем его в очередь созданных узлов
       this.enqueueEl(hNodes, hTreeNode);
@@ -238,7 +348,7 @@ class HCode {
 
       const sumCount = hNode1.getWeight() + hNode2.getWeight();
       const hTreeRoot = new HNode(null, sumCount, [hNode1, hNode2]);
-      
+
       return hTreeRoot;
     }
   }
@@ -281,51 +391,13 @@ class HCode {
       return minNode;
     }
 
-    if (hNodes[hNodes.length-1].getWeight() < sortedChars[sortedChars.length-1][1]) {
+    if (hNodes[hNodes.length - 1].getWeight() < sortedChars[sortedChars.length - 1][1]) {
       minNode = hNodes.pop();
     } else {
-      const lastChar = sortedChars.pop();      
+      const lastChar = sortedChars.pop();
       minNode = new HNode(lastChar[0], lastChar[1], null);
     }
 
     return minNode;
   }
 }
-
-/**
- * Утилита для создания таблицы частотности символов
- */
-function createCharTable(text: string): Map<string, number> {
-  const charMap = new Map();
-
-  text.split('').forEach(char => {
-    if (!charMap.has(char)) {
-      charMap.set(char, 1);
-    } else {
-      const count = charMap.get(char);
-      charMap.set(char, count + 1);
-    }
-  });
-
-  return charMap;
-}
-
-
-/** TEST */
-
-// /*** BIG TEXT */
-// const charTable3 = createCharTable(readBinaryData('abra.txt').toString('base64'));
-// console.log(charTable3, 'charTable3');
-// const algo3 = new HCode('abra.txt', charTable3);
-
-// // algo3.encode();
-// algo3.decode('abra.txt.huffman');
-
-/*** IMAGE */
-const charTable4 = createCharTable(readBinaryData('img.png').toString('base64'));
-console.log(charTable4, 'charTable4');
-// createFileHeader(0, 11, charTable4);
-const algo4 = new HCode('img.png', charTable4);
-
-// algo4.encode();
-algo4.decode('img.png.huffman');

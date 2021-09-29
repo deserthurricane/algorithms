@@ -1,20 +1,23 @@
-// Алгоритм Lempel-Ziv 1977 - динамическое накопление словаря при сжатии данных
-
-import { create2ByteNumber, create4ByteNumber, getNumberFrom16Bit, getNumberFrom32Bit, readBinaryData, writeBinaryData } from "./utils";
+import { create2ByteNumber, create4ByteNumber, getNumberFrom2Byte, getNumberFrom4Byte, readBinaryData, writeBinaryData } from "./utils";
 
 type CharTableValue = [number, number, string | null];
 
-class LZ77 {
+/**
+ * Алгоритм Lempel-Ziv 1977 - динамическое накопление словаря при сжатии данных
+ */
+export class LZ77 {
   text: string;
   charTable: Array<CharTableValue> = [];
   bufferLength = 1000;
   dictLength = 1000; // вопрос! как правильно выбрать размер?
   private fileName: string;
 
-  constructor(fileName: string) {
+  constructor(fileName: string, encoding?: BufferEncoding) {
     this.fileName = fileName;
-    this.text = readBinaryData(fileName).toString('base64');
-    // console.log(this.text, 'this.text');
+
+    if (encoding) {
+      this.text = readBinaryData(fileName).toString('base64');
+    }
   }
 
   public encode() {
@@ -46,7 +49,9 @@ class LZ77 {
 
     // console.log(data, 'data');
     
-    writeBinaryData(`${this.fileName}.lz`, data);
+    // writeBinaryData(`${this.fileName}.lz`, data);
+
+    return data;
   }
 
   createBinaryData() {
@@ -95,20 +100,20 @@ class LZ77 {
     return charTableData;
   }
 
-  public decode(fileName: string): string {
-    const encodedData: Buffer = readBinaryData(fileName);
+  public decode(): string {
+    const encodedData: Buffer = readBinaryData(this.fileName);
 
     const dataView = new Uint8Array(encodedData);
 
     const algoType: 0 | 1 = dataView[0] as 0 | 1;
-    const dataLength: number = getNumberFrom32Bit(dataView, 1);
+    const dataLength: number = getNumberFrom4Byte(dataView, 1);
     console.log(dataLength, 'dataLength');
     
 
     const charTable = [];
 
     for (let i = 5; i < encodedData.byteLength; i += 4) {
-      const position = getNumberFrom16Bit(encodedData, i);
+      const position = getNumberFrom2Byte(encodedData, i);
       const length = encodedData[i+2];
       const char = encodedData[i+3] !== 0 ? String.fromCharCode(encodedData[i+3]) : null;
 
@@ -131,7 +136,7 @@ class LZ77 {
     });
 
     // console.log(result, 'decoded string');
-    writeBinaryData(`${this.fileName}.lz.decoded`, Buffer.from(result, 'base64'))
+    // writeBinaryData(`${this.fileName}.lz.decoded`, Buffer.from(result, 'base64'))
     return result;
   }
 
@@ -166,9 +171,7 @@ class LZ77 {
    * Находим все совпадения в charTable
    */
   private getAllCoincidenceIdxFromCharTable(cursor: number): number[] {
-    // console.log(cursor, 'cursor');
     const windowOffset = this.getWindowOffset(cursor);
-    // console.log(windowOffset, 'windowOffset');
 
     const dictIdxArr: number[] = this.text
       .slice(windowOffset, cursor)
@@ -204,38 +207,3 @@ class LZ77 {
   //   );
   // }
 }
-
-/**
- * ТЕСТЫ
- */
-// const algor = new LZ77('ABRAKADABRA');
-// algor.encode();
-// algor.decode();
-
-// const algor2 = new LZ77('aacaacabcabaaac');
-// algor2.encode();
-// algor2.decode();
-
-// const algor3 = new LZ77('КОСИЛКОСОЙКОСОЙКОСОЙ');
-// algor3.encode();
-// algor3.decode();
-
-// const algor4 = new LZ77('abra.txt');
-// // algor4.encode();
-// algor4.decode('abra.txt.lz');
-
-// const algor5 = new LZ77('latin.txt');
-// // algor5.encode();
-// algor5.decode('latin.txt.lz');
-
-// const algor6 = new LZ77('glasses.png');
-// // algor6.encode();
-// algor6.decode('glasses.png.lz');
-
-// const algor7 = new LZ77('img.png');
-// // algor7.encode();
-// algor7.decode('img.png.lz');
-
-const algor8 = new LZ77('screen.png');
-// algor8.encode();
-algor8.decode('screen.png.lz');
