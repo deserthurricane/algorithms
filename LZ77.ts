@@ -38,9 +38,9 @@ class LZ77 {
         this.charTable.push([0, 0, currentChar]);
         cursor++;
       }
-
-      // console.log(this.charTable);
     }
+
+    console.log(this.charTable.length, 'this.charTable.length');
 
     const data = this.createBinaryData();
 
@@ -108,7 +108,7 @@ class LZ77 {
     const charTable = [];
 
     for (let i = 5; i < encodedData.byteLength; i += 4) {
-      const position = encodedData.slice(i, i + 2).readInt16LE();
+      const position = getNumberFrom16Bit(encodedData, i);
       const length = encodedData[i+2];
       const char = encodedData[i+3] !== 0 ? String.fromCharCode(encodedData[i+3]) : null;
 
@@ -131,7 +131,6 @@ class LZ77 {
     });
 
     // console.log(result, 'decoded string');
-
     writeBinaryData(`${this.fileName}.lz.decoded`, Buffer.from(result, 'base64'))
     return result;
   }
@@ -221,14 +220,22 @@ class LZ77 {
 // algor3.encode();
 // algor3.decode();
 
-// const algor4 = new LZ77(GRANATOVYI_BRASLET);
-// algor4.encode();
-// algor4.decode();
+// const algor4 = new LZ77('abra.txt');
+// // algor4.encode();
+// algor4.decode('abra.txt.lz');
 
 // const algor5 = new LZ77('latin.txt');
 // // algor5.encode();
 // algor5.decode('latin.txt.lz');
 
-const algor6 = new LZ77('LZ77.png');
-algor6.encode();
-// algor6.decode('LZ77.png.lz');
+// const algor6 = new LZ77('glasses.png');
+// // algor6.encode();
+// algor6.decode('glasses.png.lz');
+
+// const algor7 = new LZ77('img.png');
+// // algor7.encode();
+// algor7.decode('img.png.lz');
+
+const algor8 = new LZ77('screen.png');
+// algor8.encode();
+algor8.decode('screen.png.lz');
