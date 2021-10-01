@@ -27,8 +27,6 @@ export class Archivator {
 
   static decompress(path: string) {
     const algoType = readBinaryData(path)[0];
-
-    console.log(algoType, 'algoType');
     
     let algo;
 

@@ -1,4 +1,4 @@
-import { create2ByteNumber, create4ByteNumber, getNumberFrom2Byte, getNumberFrom4Byte, readBinaryData, writeBinaryData } from "./utils";
+import { create2ByteNumber, create4ByteNumber, getNumberFrom2Byte, getNumberFrom4Byte, readBinaryData } from "./utils";
 
 type CharTableValue = [number, number, string | null];
 
@@ -9,7 +9,7 @@ export class LZ77 {
   text: string;
   charTable: Array<CharTableValue> = [];
   bufferLength = 1000;
-  dictLength = 1000; // вопрос! как правильно выбрать размер?
+  dictLength = 1000; // чем больше словарь - тем меньше сжатый файл, но дольше сжатие
   private fileName: string;
 
   constructor(fileName: string, encoding?: BufferEncoding) {
@@ -30,10 +30,10 @@ export class LZ77 {
        * Мы ничего не ищем в словаре charTable!
        * Наоборот, мы каждый раз "с чистого листа" посимвольно сравниваем кусок текста из окна и из буфера
        */
-      const dictIdxArr = this.getAllCoincidenceIdxFromCharTable(cursor);
+      const windowIdxArr = this.getAllMatchIdxInWindow(cursor);
 
-      if (dictIdxArr?.length > 0) {
-        const [position, length] = this.findLongestSubstring(cursor, dictIdxArr);
+      if (windowIdxArr?.length > 0) {
+        const [position, length] = this.findLongestSubstring(cursor, windowIdxArr);
         const newChar = this.text[cursor + length] || null; // null - если строка закончилась
         this.charTable.push([position, length, newChar]);
         cursor += length + 1;
@@ -43,18 +43,12 @@ export class LZ77 {
       }
     }
 
-    console.log(this.charTable.length, 'this.charTable.length');
-
     const data = this.createBinaryData();
-
-    // console.log(data, 'data');
-    
-    // writeBinaryData(`${this.fileName}.lz`, data);
 
     return data;
   }
 
-  createBinaryData() {
+  private createBinaryData() {
     const algoTypeLength = 1; // 1 байт - 0 или 1
     const initialDataLength = 4; // количество символов в исходных данных занимает 4 байта
 
@@ -81,7 +75,7 @@ export class LZ77 {
     return binaryData;
   }
 
-  createCharTableBuffer(charTableByteSize: number): Uint8Array {
+  private createCharTableBuffer(charTableByteSize: number): Uint8Array {
     const charTableData = new Uint8Array(charTableByteSize);
     let i = 0;
   
@@ -95,8 +89,6 @@ export class LZ77 {
       i += 4;
     }
 
-    console.log(charTableData, 'charTableData');
-
     return charTableData;
   }
 
@@ -107,22 +99,18 @@ export class LZ77 {
 
     const algoType: 0 | 1 = dataView[0] as 0 | 1;
     const dataLength: number = getNumberFrom4Byte(dataView, 1);
-    console.log(dataLength, 'dataLength');
-    
-
-    const charTable = [];
 
     for (let i = 5; i < encodedData.byteLength; i += 4) {
       const position = getNumberFrom2Byte(encodedData, i);
       const length = encodedData[i+2];
       const char = encodedData[i+3] !== 0 ? String.fromCharCode(encodedData[i+3]) : null;
 
-      charTable.push([position, length, char]);
+      this.charTable.push([position, length, char]);
     }
 
     let result = '';
 
-    charTable.forEach(value => {
+    this.charTable.forEach(value => {
       let cursor = result.length - value[0]; // с какой позиции начинаем копировать
       let length = value[1]; // количество символов для копирования
 
@@ -131,15 +119,17 @@ export class LZ77 {
         cursor++;
         length--;
       }
-      // Добавляем последний, уникальный символ
+
+      // Добавляем последний, "уникальный" символ
       result += (value[2] !== null ? value[2] : '');
     });
 
-    // console.log(result, 'decoded string');
-    // writeBinaryData(`${this.fileName}.lz.decoded`, Buffer.from(result, 'base64'))
     return result;
   }
 
+  /**
+   * "Жадный" алгоритм: ищет самое длинное совпадение
+   */
   private findLongestSubstring(cursor: number, dictIdxArr: number[]) {
     const results = new Map<number, number>();
 
@@ -158,22 +148,18 @@ export class LZ77 {
       results.set(position, count);
     }
 
-    // console.log(results, 'results');
-    //  const longestSubStr = Object.entries(results).sort(([key1, value1], [key2, value2]) => value2 > value1 ? 1 : -1)[0]
-    // console.log(Array.from(Object.entries(results)));
-
     const longestSubStr = Array.from(results.entries()).sort(([key1, value1], [key2, value2]) => value2 > value1 ? 1 : -1)[0];
-    // console.log(longestSubStr, 'longestSubStr');
 
     return longestSubStr;
   }
+
   /**
-   * Находим все совпадения в charTable
+   * Находим все совпадения в window
    */
-  private getAllCoincidenceIdxFromCharTable(cursor: number): number[] {
+  private getAllMatchIdxInWindow(cursor: number): number[] {
     const windowOffset = this.getWindowOffset(cursor);
 
-    const dictIdxArr: number[] = this.text
+    const windowIdxArr: number[] = this.text
       .slice(windowOffset, cursor)
       .split('')
       .reduce((accum, current, currentIndex) => {
@@ -184,8 +170,7 @@ export class LZ77 {
         return accum;
       }, []);
 
-    // console.log(dictIdxArr, 'dictIdxArr');
-    return dictIdxArr;
+    return windowIdxArr;
   }
 
   /**
@@ -194,16 +179,4 @@ export class LZ77 {
   private getWindowOffset(cursor: number): number {
     return cursor - this.dictLength > 0 ? cursor - this.dictLength : 0;
   }
-
-  /**
-   * Встречается ли в словаре в интервале скользящего окна искомый символ
-   * @TODO оптимизировать ???, так как позже мы проходим по той же строке в getAllCoincidenceIdxFromCharTable 
-   */
-  // hasCharTableCurrentCharInWindow(char: string, cursor: number): boolean {
-  //   // Проход до первого совпадения, чтобы получить булевый результат и сэкономить количество итераций
-  //   return this.charTable.some(value =>
-  //     value[2] === char // проверка на наличие символа в словаре - в общем
-  //     && value[1] <= this.dictLength // попадает ли найденный символ в текущий размер окна - в частности
-  //   );
-  // }
 }
