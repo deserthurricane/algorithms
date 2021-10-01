@@ -1,46 +1,48 @@
 import { HCode } from './Huffman';
 import { LZ77 } from './LZ77';
-import { readBinaryData, writeBinaryData } from './utils';
+import { getEncoding, readBinaryData, writeBinaryData } from './utils';
 import { performance } from 'perf_hooks';
-
+import * as path from 'path';
 
 export class Archivator {
-  static compress(path: string, algoType: 0 | 1) {
-    /**
-     * @TODO определить кодировку utf8 или base64
-     */
+  static compress(pathName: string, algoType: 0 | 1) {
+    const ext = path.extname(pathName);
+    const encoding = getEncoding(ext);
 
     let algo;
 
     if (algoType === 0) {
-      algo = new HCode(path, 'base64')
+      algo = new HCode(pathName, encoding)
     }
 
     if (algoType === 1) {
-      algo = new LZ77(path, 'base64');
+      algo = new LZ77(pathName, encoding);
     }
 
     const buffer = algo.encode();
 
-    writeBinaryData(`${path}.${algoType}`, Buffer.from(buffer, 'base64'))
+    writeBinaryData(`${path.dirname(pathName)}/${path.basename(pathName, ext)}.${algoType}${ext}`, Buffer.from(buffer, encoding))
   }
 
-  static decompress(path: string) {
-    const algoType = readBinaryData(path)[0];
+  static decompress(pathName: string) {
+    const algoType = readBinaryData(pathName)[0];
     
     let algo;
 
     if (algoType === 0) {
-      algo = new HCode(path);
+      algo = new HCode(pathName);
     }
 
     if (algoType === 1) {
-      algo = new LZ77(path);
+      algo = new LZ77(pathName);
     }
 
     const buffer = algo.decode();
 
-    writeBinaryData(`${path}.decoded`, Buffer.from(buffer, 'base64'))
+    const ext = path.extname(pathName);
+    const encoding = getEncoding(ext);
+
+    writeBinaryData(`${path.dirname(pathName)}/${path.basename(pathName, ext)}.decoded${ext}`, Buffer.from(buffer, encoding));
   }
 }
 
@@ -67,9 +69,12 @@ export class Archivator {
 // }
 
 /** TEXT */
-// Archivator.compress('tests/abra/abra.txt', 0);
-// Archivator.decompress('tests/abra/abra.txt.0');
+// Archivator.compress('tests/abra/abra.txt', 1);
+// Archivator.decompress('tests/abra/abra.1.txt');
+
+// Archivator.compress('tests/latin/latin.txt', 1);
+// Archivator.decompress('tests/latin/latin.1.txt');
 
 /** IMAGE */
 // Archivator.compress('tests/glasses/glasses.png', 1);
-Archivator.decompress('tests/glasses/glasses.png.1');
+// Archivator.decompress('tests/glasses/glasses.1.png');

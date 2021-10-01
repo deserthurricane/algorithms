@@ -16,7 +16,7 @@ export class LZ77 {
     this.fileName = fileName;
 
     if (encoding) {
-      this.text = readBinaryData(fileName).toString('base64');
+      this.text = readBinaryData(fileName).toString(encoding);
     }
   }
 

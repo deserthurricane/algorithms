@@ -100,8 +100,6 @@ export class HCode {
     const charCountUtfByteSize = 4;  // число повтора символа может занять до 3 байт, так как могут быть большие числа
     const charTableByteSize = charTable.size * charCodeUtfByteSize + charTable.size * charCountUtfByteSize;
 
-    console.log(charTableByteSize, 'charTableByteSize');
-
     const bufferLength =
       1 // тип алгоритма занимает 1 байт (хранит 0 или 1)
       + 4 // количество символов в исходных данных занимает 4 байта
@@ -230,8 +228,6 @@ export class HCode {
       byteIndex += 5;
     }
 
-    console.log(charTable, 'charTable');
-
     return {
       algoType,
       dataLength,
@@ -267,7 +263,6 @@ export class HCode {
       const result = this.createBinaryCharCode(charCodeUTF);
       this.hCode.set(charCodeUTF, result);
     }
-    // console.log(this.hCode, 'this.hCode');
   }
 
   /**

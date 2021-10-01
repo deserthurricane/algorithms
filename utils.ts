@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import * as chardet from 'chardet';
+import * as mime from 'mime-types';
 
 export function readBinaryData(fileName: string): Buffer {
   return fs.readFileSync(fileName);
@@ -67,4 +69,28 @@ export function get8BitInt(num: number) {
   }
 
   return binaryNum;
+}
+
+export function getFileEncoding(path) {
+  const encoding = chardet.detectFileSync(path);
+  console.log(encoding, 'enc');
+}
+
+/**
+ * Определение кодировки файла
+ */
+export function getEncoding(ext): BufferEncoding {
+  const contentType = mime.contentType(ext) || '';
+
+  const parts = contentType.split(';');
+
+  if (parts.length === 1) {
+    if (contentType.startsWith('image')) {
+      return 'base64';
+    }
+
+    throw new Error('Unrecognized mimeType');
+  }
+
+  return parts[1].split('=')[1] as BufferEncoding;
 }
