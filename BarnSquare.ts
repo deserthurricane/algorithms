@@ -33,10 +33,10 @@ class Barn {
 
     for (let width = 1; width + x - 1 < this.yard.length; width++) {
       const height = this.getHeightAt(x + width - 1, y, minHeight);
-      // console.log(x, 'x');
-      // console.log(y, 'y');
-      // console.log(width, 'width');
-      // console.log(height, 'height');
+      console.log(x, 'x');
+      console.log(y, 'y');
+      console.log(width, 'width');
+      console.log(height, 'height');
       
       if (minHeight === 0) break;
 
@@ -50,7 +50,7 @@ class Barn {
         maxSquare = square;
       }
     }
-    // console.log(maxSquare, x, y, 'maxSquare for each X');
+    console.log(maxSquare, x, y, 'maxSquare for each X');
     
     return maxSquare;
   }
@@ -58,7 +58,7 @@ class Barn {
   private getHeightAt(x: number, y: number, minHeight: number): number {
     let height = 0;
 
-    while (height < minHeight && this.yard[x][y - height] === 0 && y - height >= 0) {
+    while (height < minHeight && this.yard[x][y + height] === 0 && y + height <= this.yard.length) {
       height++;
     }
 
