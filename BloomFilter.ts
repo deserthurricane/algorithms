@@ -1,23 +1,33 @@
-class BloomFilter {
-  // Количество хэш-функций
-  private hashFnCount: number;
-  // Буфер для хранения значений Блум Фильтра
-  private storage: ArrayBuffer;
+const chalk = require('chalk');
 
-  constructor(hashFnCount: number) {
+/**
+ * Фильтр Блума
+ * Вероятностная структура данных, позволяющая проверять принадлежность элемента к множеству
+ */
+class BloomFilter {
+  /** Количество хэш-функций */
+  private hashFnCount: number;
+  /** Буфер для хранения значений Блум-фильтра */
+  private buffer: ArrayBuffer;
+  /** Максимальное значение для хранения данных в Блум-фильтре, в байтах */
+  private size: number;
+
+  constructor(hashFnCount: number, size: number) {
     this.hashFnCount = hashFnCount;
-    this.storage = new ArrayBuffer(256);
+    this.buffer = new ArrayBuffer(size);
+    this.size = size;
   }
 
-  private getHashes(key: string): number[] {
-    let hashNumbers: number[] = [];
+  /**
+   * Обработка значения несколькими хэш-функциями
+   */
+  private getHashes(value: string): number[] {
+    const hashNumbers: number[] = [];
 
+    // Получаем несколько разных хэш-кодов для добавляемого/проверяемого значения
     for (let i = 0; i < this.hashFnCount; i++) {
-      hashNumbers.push(
-        Math.abs(
-          key.split('').reduce((a, b) => ((a << i) - a + b.charCodeAt(0)) | 0, 0)
-        )
-      );
+      const hashCode = this.getHashCode(value, i);
+      hashNumbers.push(hashCode);
     }
 
     // console.log(hashNumbers, 'hashNumbers');
@@ -25,34 +35,51 @@ class BloomFilter {
   }
 
   /**
-   * Добавление значений в Блум-фильтр
+   * Получение одного хэш-кода
    */
-  public addValue(value: string) {
-    const indexes = this.getHashes(value);
-    indexes.forEach((index) => this.storage[index] = 1);
+  private getHashCode(value: string, i: number): number {
+    return value
+      .split('')
+      .map(char => char.charCodeAt(0) + i)
+      .reduce((prev, next) => prev + next);
   }
 
   /**
-   * Проверка значений в Блум-фильтре
+   * Получение индекса значения хэш-кода в буфере 
    */
-  public checkValue(value: string) {
-    const hashes = this.getHashes(value);
-    const result = hashes.filter(index => this.storage[index] === 1);
-    console.log(result.length === this.hashFnCount, 'result');
+  private getBufferIndex(hashCode: number) {
+    return hashCode % this.size;
+  }
+
+  /**
+   * Добавление значений в буфер Блум-фильтра
+   */
+  public addValue(value: string) {
+    const hashCodes = this.getHashes(value);
+    const indexes = hashCodes.map(hashCode => this.getBufferIndex(hashCode));
+    indexes.forEach((index) => this.buffer[index] = 1);
+  }
+
+  /**
+   * Проверка наличия значений в Блум-фильтре
+   */
+  public checkValue(value: string): boolean {
+    const hashCodes = this.getHashes(value);
+    const indexes = hashCodes.map(hashCode => this.getBufferIndex(hashCode));
+    const result = indexes.filter(index => this.buffer[index] === 1);
 
     return result.length === this.hashFnCount;
   }
 }
 
 /** TEST */
-const bloomFilter = new BloomFilter(2);
-// bloomFilter.addValue('cat');
-// bloomFilter.addValue('dog');
+const bloomFilter = new BloomFilter(6, 256);
 
 const wordPresent = ['abound', 'abounds', 'abundance', 'abundant', 'accessable',
   'bloom', 'blossom', 'bolster', 'bonny', 'bonus', 'bonuses',
   'coherent', 'cohesive', 'colorful', 'comely', 'comfort',
-  'gems', 'generosity', 'generous', 'generously', 'genial'];
+  'gems', 'generosity', 'generous', 'generously', 'genial'
+];
 
 wordPresent.forEach(word => bloomFilter.addValue(word));
 
@@ -60,16 +87,14 @@ const wordAbsent = ['bluff', 'cheater', 'hate', 'war', 'humanity',
   'racism', 'hurt', 'nuke', 'gloomy', 'facebook',
   'geeksforgeeks', 'twitter'];
 
-const testWords = ['abound', 'abounds', 'abundance', 'abundant', 'accessable',
+const testWords = ['abound', 'bluff', 'abundance', 'abundant', 'accessable',
   'bloom', 'blossom', 'bolster', 'bonny', 'hurt', 'nuke', 'gloomy', 'facebook',
   'geeksforgeeks', 'twitter'].sort(() => (Math.random() > 0.5) ? 1 : -1);
 
-console.log(testWords, 'testWords shuffled');
-
-
-testWords.forEach(word => bloomFilter.checkValue(word));
-
-// bloomFilter.checkValue('cat');
-// bloomFilter.checkValue('dog');
-// bloomFilter.checkValue('dick');
-// bloomFilter.checkValue('bat');
+// 1 результат из 15 (bluff) оказывается ложно положительным
+testWords.forEach(word => {
+  const isFound = bloomFilter.checkValue(word);
+  const isPresent = wordPresent.includes(word);
+  console.log(`word ${chalk.blue(word)} is found: ${chalk.yellow(isFound)}, and is present: ${isPresent === isFound ? chalk.yellow(isPresent) : chalk.red(isPresent)}`);
+  console.log('---------------------------------------------------------------');
+});
