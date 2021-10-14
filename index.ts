@@ -19,7 +19,7 @@ export class Archivator {
       algo = new LZ77(pathName, encoding);
     }
 
-    const buffer = algo.encode();
+    const buffer = measureRunTimeDecorator(algo.encode.bind(algo));
 
     writeBinaryData(`${path.dirname(pathName)}/${path.basename(pathName, ext)}.${algoType}${ext}`, Buffer.from(buffer, encoding))
   }
@@ -37,7 +37,7 @@ export class Archivator {
       algo = new LZ77(pathName);
     }
 
-    const buffer = algo.decode();
+    const buffer = measureRunTimeDecorator(algo.decode.bind(algo));
 
     const ext = path.extname(pathName);
     const encoding = getEncoding(ext);
@@ -46,27 +46,16 @@ export class Archivator {
   }
 }
 
-// function measureRunTimeDecorator(fn) {
-//     const start = performance.now();
-//     const result = fn();
-//     const finish = performance.now();
+function measureRunTimeDecorator<T>(fn: Function) {
+  const start = performance.now();
+  const result = fn();
+  const finish = performance.now();
 
-//     const runTime = finish - start;
-//     console.log('runTime:', runTime);
+  const runTime = finish - start;
+  console.log('runTime:', runTime);
 
-//     console.log(result);
-    
-
-//     return result as Uint8Array;
-//   // const start = performance.now();
-//   // const data = fn();
-//   // const finish = performance.now();
-
-//   // const runTime = finish - start;
-//   // console.log('runTime, ms:', runTime);
-
-//   // return data;
-// }
+  return result;
+}
 
 /** TEXT */
 // Archivator.compress('tests/abra/abra.txt', 1);
@@ -78,3 +67,6 @@ export class Archivator {
 /** IMAGE */
 // Archivator.compress('tests/glasses/glasses.png', 1);
 // Archivator.decompress('tests/glasses/glasses.1.png');
+
+// Archivator.compress('tests/screen/screen.png', 1);
+// Archivator.decompress('tests/screen/screen.1.png');
