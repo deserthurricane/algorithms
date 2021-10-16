@@ -9,7 +9,7 @@ export class LZ77 {
   text: string;
   charTable: Array<CharTableValue> = [];
   bufferLength = 1000;
-  dictLength = 1000; // чем больше словарь - тем меньше сжатый файл, но дольше сжатие
+  dictLength = 4000; // чем больше словарь - тем меньше сжатый файл, но дольше сжатие
   private fileName: string;
 
   constructor(fileName: string, encoding?: BufferEncoding) {

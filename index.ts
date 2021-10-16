@@ -58,15 +58,28 @@ function measureRunTimeDecorator<T>(fn: Function) {
 }
 
 /** TEXT */
+// Archivator.compress('tests/abra/abra.txt', 0);
+// Archivator.decompress('tests/abra/abra.0.txt');
 // Archivator.compress('tests/abra/abra.txt', 1);
 // Archivator.decompress('tests/abra/abra.1.txt');
 
+// Archivator.compress('tests/latin/latin.txt', 0);
+// Archivator.decompress('tests/latin/latin.0.txt');
 // Archivator.compress('tests/latin/latin.txt', 1);
 // Archivator.decompress('tests/latin/latin.1.txt');
 
 /** IMAGE */
+// Archivator.compress('tests/glasses/glasses.png', 0);
+// Archivator.decompress('tests/glasses/glasses.0.png');
 // Archivator.compress('tests/glasses/glasses.png', 1);
 // Archivator.decompress('tests/glasses/glasses.1.png');
 
-// Archivator.compress('tests/screen/screen.png', 1);
-// Archivator.decompress('tests/screen/screen.1.png');
+// Archivator.compress('tests/photo/photo.jpg', 0);
+// Archivator.decompress('tests/photo/photo.0.jpg');
+// Archivator.compress('tests/photo/photo.jpg', 1);
+// Archivator.decompress('tests/photo/photo.1.jpg');
+
+// Archivator.compress('tests/pic/Bykovo.jpg', 0);
+// Archivator.decompress('tests/pic/Bykovo.0.jpg');
+// Archivator.compress('tests/pic/Bykovo.jpg', 1);
+// Archivator.decompress('tests/pic/Bykovo.1.jpg');
