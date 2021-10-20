@@ -21,6 +21,8 @@ export class Archivator {
 
     const buffer = measureRunTimeDecorator(algo.encode.bind(algo));
 
+    console.log(buffer.byteLength, 'compressed size in bytes');
+    
     writeBinaryData(`${path.dirname(pathName)}/${path.basename(pathName, ext)}.${algoType}${ext}`, Buffer.from(buffer, encoding))
   }
 
@@ -38,6 +40,8 @@ export class Archivator {
     }
 
     const buffer = measureRunTimeDecorator(algo.decode.bind(algo));
+
+    console.log(buffer.length, 'decompressed size in bytes');
 
     const ext = path.extname(pathName);
     const encoding = getEncoding(ext);
@@ -58,15 +62,20 @@ function measureRunTimeDecorator<T>(fn: Function) {
 }
 
 /** TEXT */
-// Archivator.compress('tests/abra/abra.txt', 0);
-// Archivator.decompress('tests/abra/abra.0.txt');
-// Archivator.compress('tests/abra/abra.txt', 1);
-// Archivator.decompress('tests/abra/abra.1.txt');
+// Archivator.compress('tests/london/london.txt', 0);
+// Archivator.decompress('tests/london/london.0.txt');
+// Archivator.compress('tests/london/london.txt', 1);
+// Archivator.decompress('tests/london/london.1.txt');
 
-// Archivator.compress('tests/latin/latin.txt', 0);
-// Archivator.decompress('tests/latin/latin.0.txt');
-// Archivator.compress('tests/latin/latin.txt', 1);
-// Archivator.decompress('tests/latin/latin.1.txt');
+// Archivator.compress('tests/twist/twist.txt', 0);
+// Archivator.decompress('tests/twist/twist.0.txt');
+// Archivator.compress('tests/twist/twist.txt', 1);
+// Archivator.decompress('tests/twist/twist.1.txt');
+
+// Archivator.compress('tests/hp/hp.txt', 0);
+// Archivator.decompress('tests/hp/hp.0.txt');
+// Archivator.compress('tests/hp/hp.txt', 1);
+// Archivator.decompress('tests/hp/hp.1.txt');
 
 /** IMAGE */
 // Archivator.compress('tests/glasses/glasses.png', 0);
