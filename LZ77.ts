@@ -25,11 +25,7 @@ export class LZ77 {
 
     while (cursor < this.text.length) {
       const currentChar = this.text[cursor];
-      /**
-       * @TODO переименовать нормально dictIdxArr
-       * Мы ничего не ищем в словаре charTable!
-       * Наоборот, мы каждый раз "с чистого листа" посимвольно сравниваем кусок текста из окна и из буфера
-       */
+
       const windowIdxArr = this.getAllMatchIdxInWindow(cursor);
 
       if (windowIdxArr?.length > 0) {

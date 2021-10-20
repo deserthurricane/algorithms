@@ -92,3 +92,8 @@ function measureRunTimeDecorator<T>(fn: Function) {
 // Archivator.decompress('tests/pic/Bykovo.0.jpg');
 // Archivator.compress('tests/pic/Bykovo.jpg', 1);
 // Archivator.decompress('tests/pic/Bykovo.1.jpg');
+
+// Archivator.compress('tests/bmp/bmp.bmp', 0);
+// Archivator.decompress('tests/bmp/bmp.0.bmp');
+// Archivator.compress('tests/bmp/bmp.bmp', 1);
+// Archivator.decompress('tests/bmp/bmp.1.bmp');
